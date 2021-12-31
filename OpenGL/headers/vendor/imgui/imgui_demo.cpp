@@ -203,11 +203,6 @@ void ImGui::ShowDemoWindow(bool* p_open)
     // Menu
     if (ImGui::BeginMenuBar())
     {
-        if (ImGui::BeginMenu("Menu"))
-        {
-            ShowExampleMenuFile();
-            ImGui::EndMenu();
-        }
         if (ImGui::BeginMenu("Examples"))
         {
             ImGui::MenuItem("Main menu bar", NULL, &show_app_main_menu_bar);
@@ -221,13 +216,6 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::MenuItem("Simple overlay", NULL, &show_app_fixed_overlay);
             ImGui::MenuItem("Manipulating window titles", NULL, &show_app_window_titles);
             ImGui::MenuItem("Custom rendering", NULL, &show_app_custom_rendering);
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Help"))
-        {
-            ImGui::MenuItem("Metrics", NULL, &show_app_metrics);
-            ImGui::MenuItem("Style Editor", NULL, &show_app_style_editor);
-            ImGui::MenuItem("About Dear ImGui", NULL, &show_app_about);
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();

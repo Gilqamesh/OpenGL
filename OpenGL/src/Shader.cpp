@@ -17,7 +17,6 @@ Shader::Shader(const std::string& filepath)
 Shader::~Shader()
 {
     GLCall(glDeleteProgram(m_RendererID));
-}
 
 void Shader::Bind() const
 {

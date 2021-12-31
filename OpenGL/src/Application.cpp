@@ -21,6 +21,8 @@
 
 #include "tests/TestClearColor.hpp"
 
+#include "tests/TestTexture2D.hpp"
+
 int main(void)
 {
     GLFWwindow* window;
@@ -51,54 +53,12 @@ int main(void)
         std::cout << "glewInit() error" << std::endl;
 
     std::cout << glGetString(GL_VERSION) << std::endl;
-    {
-        float positions[] = {
-           -50.0f, -50.0f, 0.0f, 0.0f,   // 0
-            50.0f, -50.0f, 1.0f, 0.0f,   // 1
-            50.0f,  50.0f, 1.0f, 1.0f,   // 2
-           -50.0f,  50.0f, 0.0f, 1.0f    // 3
-        };
 
-        // Index buffer
-        unsigned int indices[] = {
-            0, 1, 2,
-            2, 3, 0
-        };
+    {
 
         // To enable blending
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-        unsigned int vao;
-        GLCall(glGenVertexArrays(1, &vao));
-        GLCall(glBindVertexArray(vao));
-
-        VertexArray     va;
-        VertexBuffer    vb(positions, 4 * 4 * sizeof(float));   // 4 vertexes and 4 float each
-
-        VertexBufferLayout  layout;
-        // Position coordinates
-        layout.Push<float>(2);
-        // Texture coordinates
-        layout.Push<float>(2);
-        va.AddBuffer(vb, layout);
-
-        IndexBuffer     ib(indices, 6);
-
-        Matrix<float, 4, 4> proj(projection_matrix_ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f)); // projection
-        Matrix<float, 4, 4> view(translation_matrix(Vector<float, 3>(0.0f, 0.0f, 0.0f)));
-
-        Shader  shader("res/shaders/Basic.shader");
-        shader.Bind();
-
-        Texture texture("res/textures/landscape.jpg");
-        texture.Bind();
-        shader.SetUniform1i("u_Texture", 0);
-
-        va.Unbind();
-        vb.Unbind();
-        ib.Unbind();
-        shader.Unbind();
 
         Renderer    renderer;
 
@@ -106,49 +66,42 @@ int main(void)
         ImGui_ImplGlfwGL3_Init(window, true);
         ImGui::StyleColorsDark();
 
-        Vector<float, 3> translationA(Vector<float, 3>(200.0f, 200.0f, 0.0f));
-        Vector<float, 3> translationB(Vector<float, 3>(400.0f, 200.0f, 0.0f));
+        test::Test* currentTest = nullptr;
+        test::TestMenu* testMenu = new test::TestMenu(currentTest);
+        currentTest = testMenu;
 
-        /* Loop until the user closes the window */
+        testMenu->RegisterTest<test::TestClearColor>("Clear Color");
+        testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
+
         while (!glfwWindowShouldClose(window))
         {
+            GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
             renderer.Clear();
 
             ImGui_ImplGlfwGL3_NewFrame();
-
-            shader.Bind();
-
+            if (currentTest)
             {
-                Matrix<float, 4, 4> model(translation_matrix(translationA));
-                Matrix<float, 4, 4> mvp = model * view * proj;
-                shader.Bind();
-                shader.SetUniformMat4f("u_MVP", mvp);
-                renderer.Draw(va, ib, shader);
-            }
-
-
-            {
-                Matrix<float, 4, 4> model(translation_matrix(translationB));
-                Matrix<float, 4, 4> mvp = model * view * proj;
-                shader.SetUniformMat4f("u_MVP", mvp);
-                renderer.Draw(va, ib, shader);
-            }
-
-            {
-                ImGui::SliderFloat3("Translation A", &translationA, 0.0f, 960.0f);
-                ImGui::SliderFloat3("Translation B", &translationB, 0.0f, 960.0f);
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+                currentTest->OnUpdate(0.0f);
+                currentTest->OnRender();
+                ImGui::Begin("Test");
+                if (currentTest != testMenu && ImGui::Button("<-"))
+                {
+                    delete currentTest;
+                    currentTest = testMenu;
+                }
+                currentTest->OnImGuiRender();
+                ImGui::End();
             }
 
             ImGui::Render();
             ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
-            /* Swap front and back buffers */
             GLCall(glfwSwapBuffers(window));
-
-            /* Poll for and process events */
             GLCall(glfwPollEvents());
         }
+        if (currentTest != testMenu)
+            delete testMenu;
+        delete currentTest;
     }
 
     ImGui_ImplGlfwGL3_Shutdown();
