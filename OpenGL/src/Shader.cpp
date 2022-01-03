@@ -17,6 +17,7 @@ Shader::Shader(const std::string& filepath)
 Shader::~Shader()
 {
     GLCall(glDeleteProgram(m_RendererID));
+}
 
 void Shader::Bind() const
 {
@@ -106,6 +107,11 @@ unsigned int Shader::CreateShader(const std::string& vertexShader, const std::st
 void Shader::SetUniform1i(const std::string& name, int value)
 {
     GLCall(glUniform1i(GetUniformLocation(name), value));
+}
+
+void Shader::SetUniform1iv(const std::string& name, int count, int* value)
+{
+    GLCall(glUniform1iv(GetUniformLocation(name), count, value));
 }
 
 void Shader::SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3)
