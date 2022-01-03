@@ -20,39 +20,22 @@
 #include "vendor/imgui/imgui_impl_glfw_gl3.h"
 
 #include "tests/TestClearColor.hpp"
-
 #include "tests/TestTexture2D.hpp"
+
+#include "Window.hpp"
 
 int main(void)
 {
-    GLFWwindow* window;
-
-    /* Initialize the library */
     if (!glfwInit())
-        return -1;
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(960, 540, "Hello World", NULL, NULL);
-    if (!window)
     {
-        glfwTerminate();
-        return -1;
+        std::cerr << "glfwInit() failed" << std::endl;
+        exit(EXIT_FAILURE);
     }
 
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
-
-    // limit fps
-    glfwSwapInterval(1);
+    Window window("Hello World", 960, 540);
 
     if (glewInit() != GLEW_OK)
         std::cout << "glewInit() error" << std::endl;
-
-    std::cout << glGetString(GL_VERSION) << std::endl;
 
     {
 
@@ -63,7 +46,7 @@ int main(void)
         Renderer    renderer;
 
         ImGui::CreateContext();
-        ImGui_ImplGlfwGL3_Init(window, true);
+        ImGui_ImplGlfwGL3_Init(window.getWindow(), true);
         ImGui::StyleColorsDark();
 
         test::Test* currentTest = nullptr;
@@ -73,9 +56,10 @@ int main(void)
         testMenu->RegisterTest<test::TestClearColor>("Clear Color");
         testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
 
-        while (!glfwWindowShouldClose(window))
+        while (!glfwWindowShouldClose(window.getWindow()))
         {
-            GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
+            window.processInput();
+
             renderer.Clear();
 
             ImGui_ImplGlfwGL3_NewFrame();
@@ -96,7 +80,7 @@ int main(void)
             ImGui::Render();
             ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
-            GLCall(glfwSwapBuffers(window));
+            GLCall(glfwSwapBuffers(window.getWindow()));
             GLCall(glfwPollEvents());
         }
         if (currentTest != testMenu)
@@ -106,6 +90,5 @@ int main(void)
 
     ImGui_ImplGlfwGL3_Shutdown();
     ImGui::DestroyContext();
-    glfwTerminate();
     return 0;
 }

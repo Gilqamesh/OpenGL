@@ -34,7 +34,7 @@ namespace test
         layout.Push<float>(2);
         layout.Push<float>(1);
         m_VAO->AddBuffer(*m_VertexBuffer, layout);
-        m_IndexBuffer = std::make_unique<IndexBuffer>(indices, sizeof(indices));
+        m_IndexBuffer = std::make_unique<IndexBuffer>(indices, 12);
 
         m_Shader = std::make_unique<Shader>("res/shaders/Basic.shader");
         m_Shader->Bind();
@@ -62,8 +62,8 @@ namespace test
            -50.0f,  50.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 
             100.0f, -50.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-            150.0f, -50.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-            150.0f,  50.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            200.0f, -50.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+            200.0f,  50.0f, 0.0f, 1.0f, 1.0f, 1.0f,
             100.0f,  50.0f, 0.0f, 0.0f, 1.0f, 1.0f
         };
 
@@ -73,21 +73,20 @@ namespace test
 		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT));
         
-        Renderer renderer;
-        
+        m_Shader->Bind();
         m_BrickTex->Bind(0);
         m_SandTex->Bind(1);
 
         Matrix<float, 4, 4> proj(projection_matrix_ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f)); // projection
         Matrix<float, 4, 4> view(translation_matrix(Vector<float, 3>(0.0f, 0.0f, 0.0f)));
 
+        m_VertexBuffer->Bind();
 
         {
             Matrix<float, 4, 4> model(translation_matrix(m_TranslationA));
             Matrix<float, 4, 4> mvp = model * m_View * m_Proj;
-            m_Shader->Bind();
             m_Shader->SetUniformMat4f("u_MVP", mvp);
-            renderer.Draw(*m_VAO, *m_IndexBuffer, *m_Shader);
+            GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
         }
 
 
@@ -95,7 +94,7 @@ namespace test
             Matrix<float, 4, 4> model(translation_matrix(m_TranslationB));
             Matrix<float, 4, 4> mvp = model * m_View * m_Proj;
             m_Shader->SetUniformMat4f("u_MVP", mvp);
-            renderer.Draw(*m_VAO, *m_IndexBuffer, *m_Shader);
+            GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(6 * sizeof(unsigned int))));
         }
 	}
 
