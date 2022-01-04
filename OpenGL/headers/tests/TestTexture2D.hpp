@@ -18,6 +18,13 @@ namespace test
 		TestTexture2D();
 		~TestTexture2D();
 
+		struct Vertex
+		{
+			float                Position[3];
+			float                TexCoords[2];
+			float                TexID;
+		};
+
 		void OnUpdate(float deltaTime) override;
 		void OnRender() override;
 		void OnImGuiRender() override;

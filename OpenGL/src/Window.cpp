@@ -2,11 +2,16 @@
 #include <iostream>
 
 Window::Window(const std::string& name, int width, int height)
-	: window(glfwCreateWindow(960, 540, "Hello World", NULL, NULL))
+	: window(nullptr),
+	lastX(width / 2), lastY(height / 2), xChange(0), yChange(0)
 {
-	if (window == nullptr)
+	for (unsigned int i = 0; i < 1024; ++i)
+		keys[i];
+
+	if (!glfwInit())
 	{
-		std::cerr << "glfwCreateWindow() failed" << std::endl;
+		std::cerr << "glfwInit() failed" << std::endl;
+		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
 
@@ -14,11 +19,23 @@ Window::Window(const std::string& name, int width, int height)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	window = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
+	if (window == nullptr)
+	{
+		std::cerr << "glfwCreateWindow() failed" << std::endl;
+		exit(EXIT_FAILURE);
+	}
 	glfwMakeContextCurrent(window);
+	if (glewInit() != GLEW_OK)
+		std::cout << "glewInit() error" << std::endl;
 
-	glfwSwapInterval(1);
+	//glfwSwapInterval(1);
 
+	// callbacks
 	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
+	glfwSetKeyCallback(window, handleKeys);
+	glfwSetCursorPosCallback(window, handleMouse);
+	glfwSetWindowUserPointer(window, this);
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 }
@@ -28,9 +45,52 @@ Window::~Window()
 	glfwTerminate();
 }
 
-
-void Window::processInput(void) const
+GLfloat Window::getXChange(void)
 {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
+	GLfloat theChange = xChange;
+	xChange = 0.0f;
+	return (theChange);
+}
+
+GLfloat Window::getYChange(void)
+{
+	GLfloat theChange = yChange;
+	yChange = 0.0f;
+	return (theChange);
+}
+
+void Window::setDrawWireframeMode(void) const
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+}
+
+void Window::setDrawDefaultMode(void) const
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
+{
+	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	if (key >= 0 && key < 1024)
+	{
+		if (action == GLFW_PRESS)
+			theWindow->getKeys()[key] = true;
+		else if (action == GLFW_RELEASE)
+			theWindow->getKeys()[key] = false;
+	}
+}
+
+void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
+{
+	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	theWindow->xChange = static_cast<GLfloat>(xPos) - theWindow->lastX;
+	theWindow->yChange = theWindow->lastY - static_cast<GLfloat>(yPos);
+
+	theWindow->lastX = static_cast<GLfloat>(xPos);
+	theWindow->lastY = static_cast<GLfloat>(yPos);
 }

@@ -21,21 +21,13 @@
 
 #include "tests/TestClearColor.hpp"
 #include "tests/TestTexture2D.hpp"
+#include "tests/TestCamera.hpp"
 
 #include "Window.hpp"
 
 int main(void)
 {
-    if (!glfwInit())
-    {
-        std::cerr << "glfwInit() failed" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
     Window window("Hello World", 960, 540);
-
-    if (glewInit() != GLEW_OK)
-        std::cout << "glewInit() error" << std::endl;
 
     {
 
@@ -43,10 +35,8 @@ int main(void)
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-        Renderer    renderer;
-
         ImGui::CreateContext();
-        ImGui_ImplGlfwGL3_Init(window.getWindow(), true);
+        ImGui_ImplGlfwGL3_Init(window.getWindow(), false);
         ImGui::StyleColorsDark();
 
         test::Test* currentTest = nullptr;
@@ -55,23 +45,22 @@ int main(void)
 
         testMenu->RegisterTest<test::TestClearColor>("Clear Color");
         testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
+        testMenu->RegisterTest<test::TestCamera>("Test Camera", window);
 
         while (!glfwWindowShouldClose(window.getWindow()))
         {
-            window.processInput();
-
-            renderer.Clear();
-
             ImGui_ImplGlfwGL3_NewFrame();
             if (currentTest)
             {
                 currentTest->OnUpdate(0.0f);
                 currentTest->OnRender();
                 ImGui::Begin("Test");
-                if (currentTest != testMenu && ImGui::Button("<-"))
+                if (currentTest != testMenu
+                    && (ImGui::Button("<-") || window.getKeys()[GLFW_KEY_BACKSPACE]))
                 {
                     delete currentTest;
                     currentTest = testMenu;
+                    window.setDrawDefaultMode();
                 }
                 currentTest->OnImGuiRender();
                 ImGui::End();
@@ -80,8 +69,8 @@ int main(void)
             ImGui::Render();
             ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
-            GLCall(glfwSwapBuffers(window.getWindow()));
             GLCall(glfwPollEvents());
+            GLCall(glfwSwapBuffers(window.getWindow()));
         }
         if (currentTest != testMenu)
             delete testMenu;

@@ -9,6 +9,8 @@
 
 # include "vendor/imgui/imgui.h"
 
+# include "Window.hpp"
+
 namespace test
 {
 	class Test
@@ -27,13 +29,22 @@ namespace test
 	public:
 		TestMenu(Test*& currentTestPointer);
 
+		void OnRender() override;
 		void OnImGuiRender() override;
+
 		template <typename T>
 		void RegisterTest(const std::string& name)
 		{
 			std::cout << "Registering test " << name << std::endl;
 
 			m_Tests.push_back(std::make_pair(name, []() { return (new T); }));
+		}
+		template <typename T>
+		void RegisterTest(const std::string& name, Window& window)
+		{
+			std::cout << "Registering test " << name << std::endl;
+
+			m_Tests.push_back(std::make_pair(name, [&]() { return (new T(window)); }));
 		}
 	private:
 		Test*& m_CurrentTest;

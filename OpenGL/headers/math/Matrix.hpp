@@ -36,7 +36,7 @@ class Matrix
         Matrix(const Args & ... args):                  data({args...})     { }
         ~Matrix()                                                           { }
         Matrix(const Matrix &m):                        data(m.data)        { }
-        Matrix &operator=(const Matrix &m)                                  { if (this != &m) data = m.data; return (*this); }
+        Matrix &operator=(const Matrix &m)                                  { if (&*this != &m) data = m.data; return (*this); }
 
         // ONLY FOR SQUARE MATRICES
         T       determinant(void)       { return (::determinant(*this)); }
@@ -202,10 +202,10 @@ template <typename T>
 Matrix<T, 4, 4> projection_matrix_ortho(const T &left, const T &right, const T &bottom, const T &top, const T &zNear, const T &zFar)
 {
 	return (Matrix<T, 4, 4>(
-		static_cast<T>(2) / (right - left), static_cast<T>(0), 					static_cast<T>(0), 					static_cast<T>(0),
-		static_cast<T>(0), 					static_cast<T>(2) / (top - bottom), static_cast<T>(0), 					static_cast<T>(0),
-		static_cast<T>(0), 					static_cast<T>(0), 					static_cast<T>(2) / (zFar - zNear), static_cast<T>(0),
-		-(right + left) / (right - left), 	-(top + bottom) / (top - bottom), 	-(zFar + zNear) / (zFar - zNear), 	static_cast<T>(1)
+		static_cast<T>(2) / (right - left), static_cast<T>(0), 					static_cast<T>(0), 					 static_cast<T>(0),
+		static_cast<T>(0), 					static_cast<T>(2) / (top - bottom), static_cast<T>(0), 					 static_cast<T>(0),
+		static_cast<T>(0), 					static_cast<T>(0), 					-static_cast<T>(2) / (zFar - zNear), static_cast<T>(0),
+		-(right + left) / (right - left), 	-(top + bottom) / (top - bottom), 	-(zFar + zNear) / (zFar - zNear),    static_cast<T>(1)
 	));
 }
 
@@ -349,6 +349,26 @@ Matrix<T, ROWS, COLUMNS> operator*(const Matrix<T, ROWS, 1>& m, const Vector<T, 
         for (unsigned int c = 0; c < COLUMNS; ++c)
             res(r, c) += v[c] * m(r, 0);
     return (res);
+}
+
+template <typename T, unsigned int ROWS, unsigned int COLUMNS>
+bool operator==(const Matrix<T, ROWS, COLUMNS>& m1, const Matrix<T, ROWS, COLUMNS>& m2)
+{
+    for (unsigned int r = 0; r < ROWS; ++r)
+        for (unsigned int c = 0; c < COLUMNS; ++c)
+            if (m1(r, c) != m2(r, c))
+                return (false);
+    return (true);
+}
+
+template <typename T, unsigned int ROWS, unsigned int COLUMNS>
+bool operator!=(const Matrix<T, ROWS, COLUMNS>& m1, const Matrix<T, ROWS, COLUMNS>& m2)
+{
+    for (unsigned int r = 0; r < ROWS; ++r)
+        for (unsigned int c = 0; c < COLUMNS; ++c)
+            if (m1(r, c) == m2(r, c))
+                return (false);
+    return (true);
 }
 
 #endif

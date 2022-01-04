@@ -2,13 +2,6 @@
 
 #include "math/Matrix.hpp"
 
-struct Vertex
-{
-    float                Position[3];
-    float                TexCoords[2];
-    float                TexID;
-};
-
 namespace test
 {
     TestTexture2D::TestTexture2D()
@@ -27,6 +20,7 @@ namespace test
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
         m_VAO = std::make_unique<VertexArray>();
+        m_VAO->Bind();
         m_VertexBuffer = std::make_unique<VertexBuffer>(1000 * sizeof(Vertex));
 
         VertexBufferLayout  layout;
@@ -80,12 +74,10 @@ namespace test
         Matrix<float, 4, 4> proj(projection_matrix_ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f)); // projection
         Matrix<float, 4, 4> view(translation_matrix(Vector<float, 3>(0.0f, 0.0f, 0.0f)));
 
-        m_VertexBuffer->Bind();
-
         {
             Matrix<float, 4, 4> model(translation_matrix(m_TranslationA));
             Matrix<float, 4, 4> mvp = model * m_View * m_Proj;
-            m_Shader->SetUniformMat4f("u_MVP", mvp);
+            m_Shader->SetUniformMat4fv("u_MVP", 1, mvp);
             GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
         }
 
@@ -93,7 +85,7 @@ namespace test
         {
             Matrix<float, 4, 4> model(translation_matrix(m_TranslationB));
             Matrix<float, 4, 4> mvp = model * m_View * m_Proj;
-            m_Shader->SetUniformMat4f("u_MVP", mvp);
+            m_Shader->SetUniformMat4fv("u_MVP", 1, mvp);
             GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(6 * sizeof(unsigned int))));
         }
 	}

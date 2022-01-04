@@ -75,11 +75,13 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
         int length;
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         // c-type allocation I think? Idk why are we using it here instead of new then delete
-        char* message = (char*)alloca(length * sizeof(char));
+        //char* message = (char*)alloca(length * sizeof(char));
+        char* message = new char[length];
         glGetShaderInfoLog(id, length, &length, message);
         std::cout << "Failed to compile "
             << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader!" << std::endl;
         std::cout << message << std::endl;
+        delete message;
         glDeleteShader(id);
         return (0);
     }
@@ -119,9 +121,9 @@ void Shader::SetUniform4f(const std::string &name, float v0, float v1, float v2,
     GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 }
 
-void Shader::SetUniformMat4f(const std::string &name, const Matrix<GLfloat, 4, 4> &m)
+void Shader::SetUniformMat4fv(const std::string &name, int count, const Matrix<GLfloat, 4, 4> &m)
 {
-    GLCall(glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &m));
+    GLCall(glUniformMatrix4fv(GetUniformLocation(name), count, GL_FALSE, &m));
 }
 
 int Shader::GetUniformLocation(const std::string& name)

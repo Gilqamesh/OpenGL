@@ -30,7 +30,7 @@ class Vector
         Vector(const Args & ... args):          data(args...)   { }
 		Vector(const Vector &v):                data(v.data)    { }
 		~Vector()                                               { }
-		Vector &operator=(const Vector &v)                      { if (this != &v) data = v.data; return (*this); }
+		Vector &operator=(const Vector &v)                      { if (&*this != &v) data = v.data; return (*this); }
 
 		Vector &operator+=(const Vector &v) { for (unsigned int i = 0; i < LENGTH; ++i) (*this)[i] = (*this)[i] + v[i]; return (*this); }
 		Vector &operator-=(const Vector &v) { for (unsigned int i = 0; i < LENGTH; ++i) (*this)[i] = (*this)[i] - v[i]; return (*this); }

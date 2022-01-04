@@ -2,6 +2,7 @@
 #ifndef WINDOW_HPP
 # define WINDOW_HPP
 
+# include <GL/glew.h>
 # include <string>
 # include <GLFW/glfw3.h>
 
@@ -11,12 +12,29 @@ public:
 	Window(const std::string &, int, int);
 	~Window();
 
-	GLFWwindow* const& getWindow(void) const { return (window); }
-	void processInput(void) const;
+	GLFWwindow* getWindow(void) { return (window); }
+
+	void setDrawWireframeMode(void) const;
+	void setDrawDefaultMode(void)   const;
+
+	bool*		getKeys() { return (keys); }
+	GLfloat		getXChange(void);
+	GLfloat		getYChange(void);
 private:
 	Window();
 
 	GLFWwindow*	window;
+
+	// mouse
+	GLfloat     lastX;
+	GLfloat     lastY;
+	GLfloat     xChange;
+	GLfloat     yChange;
+	
+	bool		keys[1024];
+	
+	static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
+	static void handleMouse(GLFWwindow* window, double xPos, double yPos);
 };
 
 #endif
