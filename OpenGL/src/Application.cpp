@@ -22,6 +22,8 @@
 #include "tests/TestClearColor.hpp"
 #include "tests/TestTexture2D.hpp"
 #include "tests/TestCamera.hpp"
+#include "tests/TestScene.hpp"
+#include "tests/TestFps.hpp"
 
 #include "Window.hpp"
 
@@ -45,7 +47,9 @@ int main(void)
 
         testMenu->RegisterTest<test::TestClearColor>("Clear Color");
         testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
-        testMenu->RegisterTest<test::TestCamera>("Test Camera", window);
+        testMenu->RegisterTest<test::TestCamera>("Camera", window);
+        testMenu->RegisterTest<test::TestScene>("Scene", window);
+        testMenu->RegisterTest<test::TestFps>("Fps", window);
 
         while (!glfwWindowShouldClose(window.getWindow()))
         {

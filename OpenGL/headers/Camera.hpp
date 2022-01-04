@@ -19,6 +19,9 @@ class Camera
         Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>& startUp,
             GLfloat startYaw, GLfloat startPitch,
             GLfloat startMoveSpeed, GLfloat startTurnSpeed);
+        Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>& startUp,
+            GLfloat startYaw, GLfloat startPitch,
+            GLfloat startMoveSpeed, GLfloat startTurnSpeed, GLfloat startRoll);
         Camera(const Camera &);
         Camera &operator=(const Camera &);
         ~Camera();
@@ -36,7 +39,7 @@ class Camera
 
         GLfloat         yaw;
         GLfloat         pitch;
-        //GLfloat         roll;
+        GLfloat         roll;
 
         GLfloat         moveSpeed;
         GLfloat         turnSpeed;

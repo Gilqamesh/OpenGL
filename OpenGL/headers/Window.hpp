@@ -20,6 +20,7 @@ public:
 	bool*		getKeys() { return (keys); }
 	GLfloat		getXChange(void);
 	GLfloat		getYChange(void);
+	GLfloat		getZoom(void) const { return (zoom); }
 private:
 	Window();
 
@@ -30,11 +31,13 @@ private:
 	GLfloat     lastY;
 	GLfloat     xChange;
 	GLfloat     yChange;
+	GLfloat     zoom;
 	
 	bool		keys[1024];
 	
 	static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
 	static void handleMouse(GLFWwindow* window, double xPos, double yPos);
+	static void handleScroll(GLFWwindow* window, double xOffset, double yOffset);
 };
 
 #endif

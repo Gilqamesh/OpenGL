@@ -1,16 +1,26 @@
 #include "Camera.hpp"
+#include "Utils.hpp"
 
 Camera::Camera()
     : position(Vector<GLfloat, 3>(0.0f)), front(Vector<GLfloat, 3>(0.0f)), up(Vector<GLfloat, 3>(0.0f)),
     right(Vector<GLfloat, 3>(0.0f)), worldUp(Vector<GLfloat, 3>(0.0f)),
-    yaw(0), pitch(0), moveSpeed(0), turnSpeed(0)
+    yaw(0), pitch(0), roll(0), moveSpeed(0), turnSpeed(0)
 { }
 
 Camera::Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>& startUp,
     GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed)
     :position(startPosition), front(Vector<GLfloat, 3>(0.0f, 0.0f, -1.0f)), up(normalize(cross_product(right, front))),
     right(normalize(cross_product(front, worldUp))), worldUp(startUp),
-    yaw(startYaw), pitch(startPitch), moveSpeed(startMoveSpeed), turnSpeed(startTurnSpeed)
+    yaw(startYaw), pitch(startPitch), roll(0), moveSpeed(startMoveSpeed), turnSpeed(startTurnSpeed)
+{
+    update();
+}
+
+Camera::Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>& startUp,
+    GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed, GLfloat startRoll)
+    :position(startPosition), front(Vector<GLfloat, 3>(0.0f, 0.0f, -1.0f)), up(normalize(cross_product(right, front))),
+    right(normalize(cross_product(front, worldUp))), worldUp(startUp),
+    yaw(startYaw), pitch(startPitch), roll(startRoll), moveSpeed(startMoveSpeed), turnSpeed(startTurnSpeed)
 {
     update();
 }
@@ -93,11 +103,9 @@ Matrix<GLfloat, 4, 4>   Camera::calculateViewMatrix(void)
 
 void    Camera::update(void)
 {
-    float toRadian = 3.14159265f / 180.0f;
-
-    front[0] = cos(yaw * toRadian) * cos(pitch * toRadian);
-    front[1] = sin(pitch * toRadian);
-    front[2] = sin(yaw * toRadian) * cos(pitch * toRadian);
+    front[0] = cos(Utils::radians(yaw)) * cos(Utils::radians(pitch));
+    front[1] = sin(Utils::radians(pitch));
+    front[2] = sin(Utils::radians(yaw)) * cos(Utils::radians(pitch));
     front = normalize(front);
 
     right = normalize(cross_product(front, worldUp));

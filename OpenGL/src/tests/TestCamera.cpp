@@ -1,5 +1,6 @@
 #include "tests/TestCamera.hpp"
 #include "VertexBufferLayout.hpp"
+#include "Utils.hpp"
 
 namespace test
 {
@@ -8,7 +9,7 @@ namespace test
 		m_Model(identity_matrix<float, 4, 4>()),
 		m_View(translation_matrix(Vector<float, 3>(0.0f, 0.0f, 0.0f))),
 		//m_Proj(projection_matrix_ortho(0.0f, 960.0f, 0.0f, 540.0f, 0.1f, 100.0f)),
-		m_Proj(projection_matrix_perspective(0.785f, 960.0f / 540.0f, 0.1f, 100.0f)),
+		m_Proj(projection_matrix_perspective(Utils::radians(45.0f), 960.0f / 540.0f, 0.1f, 100.0f)),
 		m_MVP(),
 		m_Camera(
 			Vector<GLfloat, 3>(0.0f, 0.0f, 5.0f),
@@ -18,8 +19,9 @@ namespace test
 	{
 		m_window.setDrawWireframeMode();
 		glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		GLCall(glEnable(GL_DEPTH_TEST));
 
-		GLCall(glClearColor(0.1f, 0.1f, 0.1f, 0.1f));
+		GLCall(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
 
 		m_VAO = std::make_unique<VertexArray>();
 		m_VAO->Bind();
@@ -50,6 +52,7 @@ namespace test
 	TestCamera::~TestCamera()
 	{
 		glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		GLCall(glDisable(GL_DEPTH_TEST));
 	}
 
 	void TestCamera::OnUpdate(float deltaTime)
@@ -67,14 +70,14 @@ namespace test
 
 	void TestCamera::OnRender()
 	{
-		GLCall(glClear(GL_COLOR_BUFFER_BIT));
+		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		Vertex initial[] = {
-			0.0f,  0.0f,   0.0f,
-			1.0f,  0.0f,   0.0f,
-			1.0f,  0.0f,   1.0f,
-			0.0f,  0.0f,   1.0f,
-			0.5f,  2.0f,   0.5f
+		   -0.5f,  0.0f,   0.5f,
+			0.5f,  0.0f,   0.5f,
+			0.5f,  0.0f,  -0.5f,
+		   -0.5f,  0.0f,  -0.5f,
+			0.0f,  2.0f,   0.0f
 		};
 		m_VAO->Bind();
 		m_VertexBuffer->Bind();

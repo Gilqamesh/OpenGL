@@ -161,6 +161,8 @@
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\tests\TestCamera.cpp" />
+    <ClCompile Include="src\tests\TestFps.cpp" />
+    <ClCompile Include="src\tests\TestScene.cpp" />
     <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\tests\Tests.cpp" />
     <ClCompile Include="src\tests\TestClearColor.cpp" />
@@ -173,6 +175,7 @@
   <ItemGroup>
     <None Include="res\shaders\Basic.shader" />
     <None Include="res\shaders\camera.shader" />
+    <None Include="res\shaders\scene.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Camera.hpp" />
@@ -188,9 +191,12 @@
     <ClInclude Include="headers\Shader.hpp" />
     <ClInclude Include="headers\tests\TestCamera.hpp" />
     <ClInclude Include="headers\tests\TestClearColor.hpp" />
+    <ClInclude Include="headers\tests\TestFps.hpp" />
     <ClInclude Include="headers\tests\Tests.hpp" />
+    <ClInclude Include="headers\tests\TestScene.hpp" />
     <ClInclude Include="headers\tests\TestTexture2D.hpp" />
     <ClInclude Include="headers\Texture.hpp" />
+    <ClInclude Include="headers\Utils.hpp" />
     <ClInclude Include="headers\vendor\imgui\imconfig.h" />
     <ClInclude Include="headers\vendor\imgui\imgui.h" />
     <ClInclude Include="headers\vendor\imgui\imgui_impl_glfw_gl3.h" />

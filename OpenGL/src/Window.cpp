@@ -3,7 +3,7 @@
 
 Window::Window(const std::string& name, int width, int height)
 	: window(nullptr),
-	lastX(width / 2), lastY(height / 2), xChange(0), yChange(0)
+	lastX(width / 2), lastY(height / 2), xChange(0), yChange(0), zoom(45.0f)
 {
 	for (unsigned int i = 0; i < 1024; ++i)
 		keys[i];
@@ -35,6 +35,7 @@ Window::Window(const std::string& name, int width, int height)
 	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
 	glfwSetKeyCallback(window, handleKeys);
 	glfwSetCursorPosCallback(window, handleMouse);
+	glfwSetScrollCallback(window, handleScroll);
 	glfwSetWindowUserPointer(window, this);
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
@@ -93,4 +94,15 @@ void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
 
 	theWindow->lastX = static_cast<GLfloat>(xPos);
 	theWindow->lastY = static_cast<GLfloat>(yPos);
+}
+
+void Window::handleScroll(GLFWwindow* window, double xOffset, double yOffset)
+{
+	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	theWindow->zoom -= static_cast<GLfloat>(yOffset);
+	if (theWindow->zoom < 1.0f)
+		theWindow->zoom = 1.0f;
+	if (theWindow->zoom > 45.0f)
+		theWindow->zoom = 45.0f;
 }
