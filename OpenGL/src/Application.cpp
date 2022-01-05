@@ -51,12 +51,17 @@ int main(void)
         testMenu->RegisterTest<test::TestScene>("Scene", window);
         testMenu->RegisterTest<test::TestFps>("Fps", window);
 
+        float lastTime = glfwGetTime();
         while (!glfwWindowShouldClose(window.getWindow()))
         {
             ImGui_ImplGlfwGL3_NewFrame();
             if (currentTest)
             {
-                currentTest->OnUpdate(0.0f);
+                float timeNow = glfwGetTime();
+                float deltaTime = timeNow - lastTime;
+                lastTime = timeNow;
+
+                currentTest->OnUpdate(deltaTime);
                 currentTest->OnRender();
                 ImGui::Begin("Test");
                 if (currentTest != testMenu

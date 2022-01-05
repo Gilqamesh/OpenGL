@@ -27,6 +27,7 @@ class Camera
         ~Camera();
 
         void keyControl(bool *keys, float deltaTime);
+        void keyControlFPS(bool* keys, float deltaTime);
         void mouseControl(GLfloat xChange, GLfloat yChange);
 
         Matrix<GLfloat, 4, 4> calculateViewMatrix(void);
@@ -43,6 +44,10 @@ class Camera
 
         GLfloat         moveSpeed;
         GLfloat         turnSpeed;
+
+        Vector<GLfloat, 3>    frontFPS;
+        Vector<GLfloat, 3>    upFPS;
+        Vector<GLfloat, 3>    rightFPS;
 
         void update();
 };

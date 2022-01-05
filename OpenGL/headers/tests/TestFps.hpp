@@ -13,6 +13,7 @@
 # include "Window.hpp"
 # include <memory>
 # include "Camera.hpp"
+# include "Utils.hpp"
 
 namespace test
 {
@@ -38,8 +39,6 @@ namespace test
 		Matrix<float, 4, 4> m_Proj;
 		Matrix<float, 4, 4> m_MVP;
 		Camera				m_Camera;
-		float				m_deltaTime;
-		float				m_lastTime;
 
 		std::unique_ptr<Shader> m_Shader;
 		std::unique_ptr<VertexArray> m_VAO;
@@ -50,6 +49,10 @@ namespace test
 		std::unique_ptr<VertexBuffer> m_VertexBufferGround;
 		std::unique_ptr<IndexBuffer> m_IndexBufferGround;
 		std::unique_ptr<Shader> m_ShaderGround;
+
+		std::vector<Utils::QuadColor>				   groundQuads;
+		unsigned int								   groundWidth;
+		unsigned int								   groundHeight;
 	};
 }
 

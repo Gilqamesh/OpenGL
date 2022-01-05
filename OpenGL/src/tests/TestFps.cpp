@@ -1,6 +1,5 @@
 #include "tests/TestFps.hpp"
 #include "VertexBufferLayout.hpp"
-#include "Utils.hpp"
 
 namespace test
 {
@@ -10,10 +9,12 @@ namespace test
 		m_Proj(),
 		m_MVP(),
 		m_Camera(
-			Vector<GLfloat, 3>(0.0f, 0.0f, 3.0f),
+			Vector<GLfloat, 3>(50.0f, 1.0f, 50.0f),
 			Vector<GLfloat, 3>(0.0f, 1.0f, 0.0f),
-			-90.0f, 0.0f, 2.5f, 0.25f),
-		m_deltaTime(0.0f), m_lastTime(0.0f)
+			-90.0f, 0.0f, 5.0f, 0.25f),
+		groundQuads(),
+		groundWidth(10),
+		groundHeight(10)
 	{
 		glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		GLCall(glEnable(GL_DEPTH_TEST));
@@ -52,14 +53,26 @@ namespace test
 		m_Shader->Unbind();
 
 		// Ground Logic
-		unsigned int indicesGround[] = {
-			0, 1, 2, 2, 3, 0
-		};
-		m_IndexBufferGround = std::make_unique<IndexBuffer>(indicesGround, 6);
+		std::vector<std::array<unsigned int, 6>> indicesGround;
+		for (unsigned int i = 0; i < 10000; ++i)
+		{
+			indicesGround.push_back({
+				i * 4 + 0,
+				i * 4 + 1,
+				i * 4 + 2,
+				i * 4 + 2,
+				i * 4 + 3,
+				i * 4 + 0
+				});
+		}
 		m_ShaderGround = std::make_unique<Shader>("res/shaders/ground.shader");
 		m_VAOGround = std::make_unique<VertexArray>();
 		m_VAOGround->Bind();
-		m_VertexBufferGround = std::make_unique<VertexBuffer>(sizeof(Utils::VertexColor) * 1000);
+		m_IndexBufferGround = std::make_unique<IndexBuffer>(&indicesGround[0], 6 * 10000);
+		for (unsigned int j = 0; j < 100; ++j)
+			for (unsigned int i = 0; i < 100; ++i)
+				groundQuads.push_back(Utils::CreateQuad(static_cast<float>(i), 0.0f, static_cast<float>(j), 1.0f, 0.5f, 0.2f, 0.1f, 1.0f));
+		m_VertexBufferGround = std::make_unique<VertexBuffer>(groundQuads.size() * sizeof(Utils::QuadColor), &groundQuads[0]);
 		VertexBufferLayout layoutGround;
 		layoutGround.Push<float>(3);
 		layoutGround.Push<float>(4);
@@ -77,13 +90,9 @@ namespace test
 
 	void TestFps::OnUpdate(float deltaTime)
 	{
-		float now = static_cast<float>(glfwGetTime());
-		m_deltaTime = now - m_lastTime;
-		m_lastTime = now;
-
-		m_Proj = projection_matrix_perspective(Utils::radians(m_window.getZoom()), 960.0f / 540.0f, 0.1f, 100.0f);
+		m_Proj = projection_matrix_perspective(Utils::radians(m_window.getZoom()), 960.0f / 540.0f, 0.1f, 1000.0f);
 		m_Camera.mouseControl(m_window.getXChange(), m_window.getYChange());
-		m_Camera.keyControl(m_window.getKeys(), m_deltaTime);
+		m_Camera.keyControlFPS(m_window.getKeys(), deltaTime);
 		m_View = m_Camera.calculateViewMatrix();
 	}
 
@@ -109,29 +118,18 @@ namespace test
 		m_IndexBuffer->Unbind();
 
 		// Ground logic
-		m_window.setDrawWireframeMode();
-		auto quad = Utils::CreateQuad(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f);
 		m_VAOGround->Bind();
 		m_VertexBufferGround->Bind();
 		m_IndexBufferGround->Bind();
-		GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), &quad));
+		// GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quads), &quads));
 		m_ShaderGround->Bind();
-		for (unsigned int j = 0; j < 10; ++j)
-		{
-			for (unsigned int i = 0; i < 10; ++i)
-			{
-				Matrix<float, 4, 4> model = translation_matrix(Vector<float, 3>(static_cast<float>(i), static_cast<float>(j), 0.0f));
-				model *= rotation_matrix(Utils::radians(90.0f), Vector<float, 3>(1.0f, 0.0f, 0.0f));
-				m_MVP = model * m_View * m_Proj;
-				m_ShaderGround->SetUniformMat4fv("u_MVP", 1, m_MVP);
-				GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-			}
-		}
+		m_MVP = m_View * m_Proj;
+		m_ShaderGround->SetUniformMat4fv("u_MVP", 1, m_MVP);
+		GLCall(glDrawElements(GL_TRIANGLES, 6 * 100 * 100, GL_UNSIGNED_INT, nullptr));
 		m_VAOGround->Unbind();
 		m_VertexBufferGround->Unbind();
 		m_ShaderGround->Unbind();
 		m_IndexBufferGround->Unbind();
-		m_window.setDrawDefaultMode();
 	}
 
 	void TestFps::OnImGuiRender()

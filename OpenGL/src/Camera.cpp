@@ -11,7 +11,8 @@ Camera::Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>
     GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed)
     :position(startPosition), front(Vector<GLfloat, 3>(0.0f, 0.0f, -1.0f)), up(normalize(cross_product(right, front))),
     right(normalize(cross_product(front, worldUp))), worldUp(startUp),
-    yaw(startYaw), pitch(startPitch), roll(0), moveSpeed(startMoveSpeed), turnSpeed(startTurnSpeed)
+    yaw(startYaw), pitch(startPitch), roll(0), moveSpeed(startMoveSpeed), turnSpeed(startTurnSpeed),
+    frontFPS(Vector<GLfloat, 3>(front[0], static_cast<GLfloat>(0.0f), front[2])), upFPS(0.0f, 1.0f, 0.0f), rightFPS(normalize(cross_product(frontFPS, worldUp)))
 {
     update();
 }
@@ -20,7 +21,9 @@ Camera::Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>
     GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed, GLfloat startRoll)
     :position(startPosition), front(Vector<GLfloat, 3>(0.0f, 0.0f, -1.0f)), up(normalize(cross_product(right, front))),
     right(normalize(cross_product(front, worldUp))), worldUp(startUp),
-    yaw(startYaw), pitch(startPitch), roll(startRoll), moveSpeed(startMoveSpeed), turnSpeed(startTurnSpeed)
+    yaw(startYaw), pitch(startPitch), roll(startRoll), moveSpeed(startMoveSpeed), turnSpeed(startTurnSpeed),
+    frontFPS(Vector<GLfloat, 3>(front[0], static_cast<GLfloat>(0.0f), front[2])), upFPS(0.0f, 1.0f, 0.0f), rightFPS(normalize(cross_product(frontFPS, worldUp)))
+
 {
     update();
 }
@@ -78,6 +81,36 @@ void    Camera::keyControl(bool *keys, float deltaTime)
     }
 }
 
+void    Camera::keyControlFPS(bool* keys, float deltaTime)
+{
+    GLfloat velocity = moveSpeed * static_cast<GLfloat>(deltaTime);
+
+    if (keys[GLFW_KEY_W])
+    {
+        position += frontFPS * velocity;
+    }
+    if (keys[GLFW_KEY_S])
+    {
+        position -= frontFPS * velocity;
+    }
+    if (keys[GLFW_KEY_A])
+    {
+        position -= rightFPS * velocity;
+    }
+    if (keys[GLFW_KEY_D])
+    {
+        position += rightFPS * velocity;
+    }
+    if (keys[GLFW_KEY_SPACE])
+    {
+        position += upFPS * velocity;
+    }
+    if (keys[GLFW_KEY_LEFT_CONTROL])
+    {
+        position -= upFPS * velocity;
+    }
+}
+
 void    Camera::mouseControl(GLfloat xChange, GLfloat yChange)
 {
     xChange *= turnSpeed;
@@ -109,4 +142,10 @@ void    Camera::update(void)
 
     right = normalize(cross_product(front, worldUp));
     up = normalize(cross_product(right, front));
+
+
+    frontFPS[0] = front[0];
+    frontFPS[2] = front[2];
+    
+    rightFPS = normalize(cross_product(frontFPS, worldUp));
 }
