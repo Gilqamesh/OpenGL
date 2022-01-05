@@ -35,10 +35,11 @@ namespace test
 		TestFps();
 
 		Window& m_window;
-		Matrix<float, 4, 4> m_View;
-		Matrix<float, 4, 4> m_Proj;
-		Matrix<float, 4, 4> m_MVP;
-		Camera				m_Camera;
+		Matrix<float, 4, 4>		m_View;
+		Matrix<float, 4, 4>		m_Proj;
+		Matrix<float, 4, 4>		m_MVP;
+		Camera					m_Camera;
+		Camera::cameraModeType	m_CameraMode;
 
 		std::unique_ptr<Shader> m_Shader;
 		std::unique_ptr<VertexArray> m_VAO;

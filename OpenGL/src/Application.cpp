@@ -65,7 +65,7 @@ int main(void)
                 currentTest->OnRender();
                 ImGui::Begin("Test");
                 if (currentTest != testMenu
-                    && (ImGui::Button("<-") || window.getKeys()[GLFW_KEY_BACKSPACE]))
+                    && (ImGui::Button("Back to menu <-") || window.getKeys()[GLFW_KEY_BACKSPACE]))
                 {
                     delete currentTest;
                     currentTest = testMenu;

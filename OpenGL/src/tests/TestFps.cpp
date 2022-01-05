@@ -9,12 +9,13 @@ namespace test
 		m_Proj(),
 		m_MVP(),
 		m_Camera(
-			Vector<GLfloat, 3>(50.0f, 1.0f, 50.0f),
+			Vector<GLfloat, 3>(0.0f, 5.0f, 00.0f),
 			Vector<GLfloat, 3>(0.0f, 1.0f, 0.0f),
 			-90.0f, 0.0f, 5.0f, 0.25f),
 		groundQuads(),
 		groundWidth(10),
-		groundHeight(10)
+		groundHeight(10),
+		m_CameraMode(Camera::FREE)
 	{
 		glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		GLCall(glEnable(GL_DEPTH_TEST));
@@ -90,9 +91,31 @@ namespace test
 
 	void TestFps::OnUpdate(float deltaTime)
 	{
+		// Update Members
+		bool *keys = m_window.getKeys();
+		if (keys[GLFW_KEY_1])
+		{
+			glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			m_CameraMode = Camera::FREE;
+		}
+		if (keys[GLFW_KEY_2])
+		{
+			glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			m_CameraMode = Camera::FPS;
+		}
+		if (keys[GLFW_KEY_3])
+		{
+			m_CameraMode = Camera::TOPDOWN;
+			glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+
+		// Projection Matrix
 		m_Proj = projection_matrix_perspective(Utils::radians(m_window.getZoom()), 960.0f / 540.0f, 0.1f, 1000.0f);
+
+		// View Matrix
 		m_Camera.mouseControl(m_window.getXChange(), m_window.getYChange());
-		m_Camera.keyControlFPS(m_window.getKeys(), deltaTime);
+		m_Camera.setMode(m_CameraMode);
+		m_Camera.keyControl(m_window.getKeys(), deltaTime);
 		m_View = m_Camera.calculateViewMatrix();
 	}
 
@@ -134,6 +157,19 @@ namespace test
 
 	void TestFps::OnImGuiRender()
 	{
-
+		ImGui::Text("Camera options:\n(1) Free camera\n(2) FPS\n(3) Top Down\n\n");
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Current mode: ");
+		switch (m_Camera.getMode())
+		{
+		case Camera::FREE:
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Free");
+			break;
+		case Camera::FPS:
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "FPS");
+			break;
+		case Camera::TOPDOWN:
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Top down");
+			break;
+		}
 	}
 }

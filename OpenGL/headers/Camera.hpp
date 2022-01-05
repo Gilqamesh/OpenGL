@@ -8,29 +8,29 @@
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
 
-// ************************************************************************** //
-//                              Camera Class                                  //
-// ************************************************************************** //
-
 class Camera
 {
     public:
+        enum cameraModeType {
+            FREE,
+            FPS,
+            TOPDOWN
+        };
+
         Camera();
         Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>& startUp,
             GLfloat startYaw, GLfloat startPitch,
             GLfloat startMoveSpeed, GLfloat startTurnSpeed);
-        Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>& startUp,
-            GLfloat startYaw, GLfloat startPitch,
-            GLfloat startMoveSpeed, GLfloat startTurnSpeed, GLfloat startRoll);
-        Camera(const Camera &);
-        Camera &operator=(const Camera &);
         ~Camera();
 
         void keyControl(bool *keys, float deltaTime);
-        void keyControlFPS(bool* keys, float deltaTime);
         void mouseControl(GLfloat xChange, GLfloat yChange);
 
+        void           setMode(cameraModeType mode) { cameraMode = mode; }
+        cameraModeType getMode(void) const          { return (cameraMode); }
+
         Matrix<GLfloat, 4, 4> calculateViewMatrix(void);
+
     private:
         Vector<GLfloat, 3>    position;
         Vector<GLfloat, 3>    front;
@@ -40,14 +40,15 @@ class Camera
 
         GLfloat         yaw;
         GLfloat         pitch;
-        GLfloat         roll;
+        //GLfloat         roll;
 
         GLfloat         moveSpeed;
         GLfloat         turnSpeed;
 
-        Vector<GLfloat, 3>    frontFPS;
-        Vector<GLfloat, 3>    upFPS;
-        Vector<GLfloat, 3>    rightFPS;
+        cameraModeType     cameraMode;
+        Vector<GLfloat, 3> mode_Front;
+        Vector<GLfloat, 3> mode_Up;
+        Vector<GLfloat, 3> mode_Right;
 
         void update();
 };

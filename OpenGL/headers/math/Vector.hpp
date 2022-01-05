@@ -140,8 +140,8 @@ Vector<T, LENGTH> operator-(const Vector<T, LENGTH> &v1, const Vector<T, LENGTH>
     return (r);
 }
 
-template <typename T, unsigned int LENGTH>
-Vector<T, LENGTH> operator*(const Vector<T, LENGTH> &v, const T &a)
+template <typename T, typename U, unsigned int LENGTH>
+Vector<T, LENGTH> operator*(const Vector<T, LENGTH> &v, const U &a)
 {
     Vector<T, LENGTH>   r(v);
 
@@ -150,8 +150,8 @@ Vector<T, LENGTH> operator*(const Vector<T, LENGTH> &v, const T &a)
     return (r);
 }
 
-template <typename T, unsigned int LENGTH>
-Vector<T, LENGTH> operator*(const T &a, const Vector<T, LENGTH> &v)
+template <typename T, typename U, unsigned int LENGTH>
+Vector<T, LENGTH> operator*(const U &a, const Vector<T, LENGTH> &v)
 {
     Vector<T, LENGTH>   r(v);
 
