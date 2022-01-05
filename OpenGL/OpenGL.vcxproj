@@ -163,6 +163,7 @@
     <ClCompile Include="src\tests\TestCamera.cpp" />
     <ClCompile Include="src\tests\TestFps.cpp" />
     <ClCompile Include="src\tests\TestScene.cpp" />
+    <ClCompile Include="src\Utils.cpp" />
     <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\tests\Tests.cpp" />
     <ClCompile Include="src\tests\TestClearColor.cpp" />
@@ -175,6 +176,8 @@
   <ItemGroup>
     <None Include="res\shaders\Basic.shader" />
     <None Include="res\shaders\camera.shader" />
+    <None Include="res\shaders\fps.shader" />
+    <None Include="res\shaders\ground.shader" />
     <None Include="res\shaders\scene.shader" />
   </ItemGroup>
   <ItemGroup>
@@ -185,7 +188,6 @@
     <ClInclude Include="headers\math\Matrix.hpp" />
     <ClInclude Include="headers\math\Point.hpp" />
     <ClInclude Include="headers\math\Quaternion.hpp" />
-    <ClInclude Include="headers\math\Utils.hpp" />
     <ClInclude Include="headers\math\Vector.hpp" />
     <ClInclude Include="headers\Renderer.hpp" />
     <ClInclude Include="headers\Shader.hpp" />

@@ -24,7 +24,8 @@ namespace test
 
 		struct Vertex
 		{
-			float                Position[3];
+			float Position[3];
+			float TexCoord[2];
 		};
 
 		void OnUpdate(float deltaTime) override;

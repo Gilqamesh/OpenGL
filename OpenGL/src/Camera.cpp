@@ -76,7 +76,6 @@ void    Camera::keyControl(bool *keys, float deltaTime)
     {
         position -= up * velocity;
     }
-    std::cout << "Position: " << position << std::endl;
 }
 
 void    Camera::mouseControl(GLfloat xChange, GLfloat yChange)

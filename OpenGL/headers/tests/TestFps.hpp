@@ -24,7 +24,7 @@ namespace test
 
 		struct Vertex
 		{
-			float                Position[3];
+			float Position[3];
 		};
 
 		void OnUpdate(float deltaTime) override;
@@ -44,8 +44,12 @@ namespace test
 		std::unique_ptr<Shader> m_Shader;
 		std::unique_ptr<VertexArray> m_VAO;
 		std::unique_ptr<VertexBuffer> m_VertexBuffer;
+		std::unique_ptr<IndexBuffer> m_IndexBuffer;
 		std::unique_ptr<Texture> m_Texture;
 		std::unique_ptr<VertexArray> m_VAOGround;
+		std::unique_ptr<VertexBuffer> m_VertexBufferGround;
+		std::unique_ptr<IndexBuffer> m_IndexBufferGround;
+		std::unique_ptr<Shader> m_ShaderGround;
 	};
 }
 

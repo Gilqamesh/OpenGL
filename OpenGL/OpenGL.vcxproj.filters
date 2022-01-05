@@ -75,11 +75,16 @@
     <ClCompile Include="src\tests\TestFps.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\Basic.shader" />
     <None Include="res\shaders\camera.shader" />
     <None Include="res\shaders\scene.shader" />
+    <None Include="res\shaders\fps.shader" />
+    <None Include="res\shaders\ground.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Renderer.hpp">
@@ -119,9 +124,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headers\math\Quaternion.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="headers\math\Utils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headers\math\Vector.hpp">

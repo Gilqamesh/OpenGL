@@ -6,7 +6,7 @@ namespace test
 {
 	TestFps::TestFps(Window& window)
 		: m_window(window),
-		m_View(translation_matrix(Vector<float, 3>(0.0f, 0.0f, 0.0f))),
+		m_View(translation_matrix(Vector<float, 3>(0.0f, 0.0f, 5.0f))),
 		m_Proj(),
 		m_MVP(),
 		m_Camera(
@@ -15,7 +15,6 @@ namespace test
 			-90.0f, 0.0f, 2.5f, 0.25f),
 		m_deltaTime(0.0f), m_lastTime(0.0f)
 	{
-		m_window.setDrawWireframeMode();
 		glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		GLCall(glEnable(GL_DEPTH_TEST));
 
@@ -29,15 +28,45 @@ namespace test
 		VertexBufferLayout layout;
 		layout.Push<float>(3);
 		layout.Push<float>(2);
+		layout.Push<float>(1);
 		m_VAO->AddBuffer(*m_VertexBuffer, layout);
 
-		m_Shader = std::make_unique<Shader>("res/shaders/scene.shader");
+		unsigned int indices[] = {
+			0,  1,  2,  2,  3,  0,
+			4,  5,  6,  6,  7,  4,
+			8,  9,  10, 10, 11, 8,
+			12, 13, 14, 14, 15, 12,
+			16, 17, 18, 18, 19, 16,
+			20, 21, 22, 22, 23, 20,
+		};
+		m_IndexBuffer = std::make_unique<IndexBuffer>(indices, 36);
+
+		m_Shader = std::make_unique<Shader>("res/shaders/fps.shader");
 
 		m_Texture = std::make_unique<Texture>("res/textures/brick.png");
 		m_Texture->Bind();
 
 		m_VAO->Unbind();
 		m_VertexBuffer->Unbind();
+		m_IndexBuffer->Unbind();
+		m_Shader->Unbind();
+
+		// Ground Logic
+		unsigned int indicesGround[] = {
+			0, 1, 2, 2, 3, 0
+		};
+		m_IndexBufferGround = std::make_unique<IndexBuffer>(indicesGround, 6);
+		m_ShaderGround = std::make_unique<Shader>("res/shaders/ground.shader");
+		m_VAOGround = std::make_unique<VertexArray>();
+		m_VAOGround->Bind();
+		m_VertexBufferGround = std::make_unique<VertexBuffer>(sizeof(Utils::VertexColor) * 1000);
+		VertexBufferLayout layoutGround;
+		layoutGround.Push<float>(3);
+		layoutGround.Push<float>(4);
+		m_VAOGround->AddBuffer(*m_VertexBufferGround, layoutGround);
+		m_VAOGround->Unbind();
+		m_VertexBufferGround->Unbind();
+		m_IndexBufferGround->Unbind();
 	}
 
 	TestFps::~TestFps()
@@ -62,65 +91,47 @@ namespace test
 	{
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-		Vector<float, 3> cubePositions[] = {
-			Vector<float, 3>(0.0f, 0.0f, 0.0f),
-			Vector<float, 3>(2.0f, 5.0f, -15.0f),
-			Vector<float, 3>(-1.5f, -2.2f, -2.5f),
-			Vector<float, 3>(3.8f, -2.0f, -12.3f),
-			Vector<float, 3>(2.4f, -0.4f, -3.5f),
-			Vector<float, 3>(-1.7f, 3.0f, -7.5f),
-			Vector<float, 3>(1.3f, -2.0f, -2.5f),
-			Vector<float, 3>(1.5f, 2.0f, -2.5f),
-			Vector<float, 3>(1.5f, 0.2f, -1.5f),
-			Vector<float, 3>(-1.3f, 1.0f, -1.5f),
-		};
-
-		Vertex pyramid[] = {
-			0.0f,  0.0f,   0.0f, 0.0f, 0.0f,
-			0.5f,  0.0f,   0.0f, 1.0f, 0.0f,
-			0.5f,  0.5f,   0.0f, 1.0f, 1.0f,
-
-			0.5f,  0.5f,   0.0f, 1.0f, 1.0f,
-			0.0f,  0.5f,   0.0f, 0.0f, 1.0f,
-			0.0f,  0.0f,   0.0f, 0.0f, 0.0f,
-
-			0.0f,  0.0f,   0.0f, 0.0f, 0.0f,
-			0.5f,  0.0f,   0.0f, 1.0f, 0.0f,
-			0.25f, 0.25f,  1.0f, 0.5f, 1.0f,
-
-			0.5f,  0.0f,   0.0f, 0.0f, 0.0f,
-			0.5f,  0.5f,   0.0f, 1.0f, 0.0f,
-			0.25f, 0.25f,  1.0f, 0.5f, 1.0f,
-
-			0.5f,  0.5f,   0.0f, 0.0f, 0.0f,
-			0.0f,  0.5f,   0.0f, 1.0f, 0.0f,
-			0.25f, 0.25f,  1.0f, 0.5f, 1.0f,
-
-			0.0f,  0.5f,   0.0f, 0.0f, 0.0f,
-			0.0f,  0.0f,   0.0f, 1.0f, 0.0f,
-			0.25f, 0.25f,  1.0f, 0.5f, 1.0f,
-		};
+		auto cube = Utils::CreateCube(0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
 		m_VAO->Bind();
 		m_VertexBuffer->Bind();
-		GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pyramid), pyramid));
+		GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(cube), &cube));
 
 		m_Shader->Bind();
-
 		m_Shader->SetUniform1i("u_Texture", 0);
-		for (unsigned int i = 0; i < 10; ++i)
-		{
-			Matrix<float, 4, 4> model(translation_matrix(cubePositions[i]));
-			model *= rotation_matrix(Utils::radians(20.0f) * i,
-				Vector<float, 3>(1.0f, 0.3f, 0.5f));
-			m_MVP = model * m_View * m_Proj;
-			m_Shader->SetUniformMat4fv("u_MVP", 1, m_MVP);
-			GLCall(glDrawArrays(GL_TRIANGLES, 0, 18));
-		}
+		m_MVP = m_View * m_Proj;
+		m_Shader->SetUniformMat4fv("u_MVP", 1, m_MVP);
+		m_IndexBuffer->Bind();
 
-
-		m_Shader->Unbind();
+		GLCall(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr));
 		m_VAO->Unbind();
+		m_Shader->Unbind();
+		m_IndexBuffer->Unbind();
+
+		// Ground logic
+		m_window.setDrawWireframeMode();
+		auto quad = Utils::CreateQuad(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f);
+		m_VAOGround->Bind();
+		m_VertexBufferGround->Bind();
+		m_IndexBufferGround->Bind();
+		GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), &quad));
+		m_ShaderGround->Bind();
+		for (unsigned int j = 0; j < 10; ++j)
+		{
+			for (unsigned int i = 0; i < 10; ++i)
+			{
+				Matrix<float, 4, 4> model = translation_matrix(Vector<float, 3>(static_cast<float>(i), static_cast<float>(j), 0.0f));
+				model *= rotation_matrix(Utils::radians(90.0f), Vector<float, 3>(1.0f, 0.0f, 0.0f));
+				m_MVP = model * m_View * m_Proj;
+				m_ShaderGround->SetUniformMat4fv("u_MVP", 1, m_MVP);
+				GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+			}
+		}
+		m_VAOGround->Unbind();
+		m_VertexBufferGround->Unbind();
+		m_ShaderGround->Unbind();
+		m_IndexBufferGround->Unbind();
+		m_window.setDrawDefaultMode();
 	}
 
 	void TestFps::OnImGuiRender()
