@@ -42,6 +42,8 @@ namespace test
 		float					m_MoveSpeed;
 
 		std::unique_ptr<Texture>		m_EnvTexture;
+		std::unique_ptr<Texture>		m_EnvTextureSpecular;
+		std::unique_ptr<Texture>		m_EnvTextureEmission;
 		std::unique_ptr<Shader>			m_EnvShader;
 		std::unique_ptr<VertexArray>	m_EnvVAO;
 		std::unique_ptr<VertexBuffer>	m_EnvVBO;

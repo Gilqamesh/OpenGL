@@ -2,7 +2,7 @@
 #include <iostream>
 
 Window::Window(const std::string& name, int width, int height)
-	: window(nullptr),
+	: width(width), height(height), window(nullptr),
 	lastX(width / 2), lastY(height / 2), xChange(0), yChange(0), zoom(45.0f)
 {
 	for (unsigned int i = 0; i < 1024; ++i)

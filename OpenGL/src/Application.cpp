@@ -29,7 +29,7 @@
 
 int main(void)
 {
-    Window window("Hello World", 960, 540);
+    Window window("Hello World", 1366, 768);
 
     {
 

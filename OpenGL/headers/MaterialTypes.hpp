@@ -2,14 +2,35 @@
 #ifndef MATERIALTYPES_HPP
 # define MATERIALTYPES_HPP
 
-# include <array>
+# include "math/Vector.hpp"
 
 struct Material
 {
-	std::array<float, 3> ambientColor;
+	enum colorType
+	{
+		TEX,
+		COLOR
+	};
+	union
+	{
+		struct
+		{
+			int tex;
+			int texSpecular;
+			int texEmission;
+		} t;
+		Vector<float, 4> color;
+	} color;
+
+	Vector<float, 4> specularColor;
+	float			 specularStrength;
+
+	float			 shininessFactor;
+
+	/*std::array<float, 3> ambientColor;
 	std::array<float, 3> diffuseColor;
 	std::array<float, 3> specularColor;
-	float				 shininess;
+	float				 shininess;*/
 };
 
 struct MaterialTypes

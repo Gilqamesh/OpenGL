@@ -185,6 +185,7 @@
   <ItemGroup>
     <ClInclude Include="headers\Camera.hpp" />
     <ClInclude Include="headers\IndexBuffer.hpp" />
+    <ClInclude Include="headers\LightSource.hpp" />
     <ClInclude Include="headers\MaterialTypes.hpp" />
     <ClInclude Include="headers\math\Debug.hpp" />
     <ClInclude Include="headers\math\Fixed.hpp" />

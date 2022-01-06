@@ -20,9 +20,14 @@ public:
 	bool*		getKeys() { return (keys); }
 	GLfloat		getXChange(void);
 	GLfloat		getYChange(void);
-	GLfloat		getZoom(void) const { return (zoom); }
+	GLfloat		getZoom(void)	const { return (zoom);   }
+	int			getWidth(void)	const { return (width);  }
+	int			getHeight(void) const { return (height); }
 private:
 	Window();
+
+	int width;
+	int height;
 
 	GLFWwindow*	window;
 

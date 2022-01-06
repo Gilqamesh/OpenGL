@@ -16,8 +16,8 @@ namespace test
 		groundHeight(10),
 		m_CameraMode(Camera::cameraModeType::FREE),
 		m_MoveSpeed(5.0f),
-		m_EnvAmbientStrength(0.2f), m_EnvSpecularStrength(0.5f), m_EnvShininess(32.0f),
-		m_GroundAmbientStrength(0.2f), m_GroundSpecularStrength(0.5f), m_GroundShininess(32.0f),
+		m_EnvAmbientStrength(0.1f), m_EnvSpecularStrength(0.5f), m_EnvShininess(32.0f),
+		m_GroundAmbientStrength(0.1f), m_GroundSpecularStrength(0.5f), m_GroundShininess(32.0f),
 		m_LightSourceColor(1.0f, 1.0f, 1.0f, 1.0f),
 		m_LightSourcePosition(20.0f, 20.0f, 20.0f)
 	{
@@ -88,7 +88,9 @@ namespace test
 		}
 
 		// Projection Matrix
-		m_Proj = projection_matrix_perspective(Utils::radians(m_window.getZoom()), 960.0f / 540.0f, 0.1f, 1000.0f);
+		m_Proj = projection_matrix_perspective(
+			Utils::radians(m_window.getZoom()),
+			static_cast<float>(m_window.getWidth()) / static_cast<float>(m_window.getHeight()), 0.1f, 1000.0f);
 
 		// View Matrix
 		m_Camera.setMode(m_CameraMode);
@@ -108,7 +110,6 @@ namespace test
 		m_EnvShader->SetUniformMat4fv("model", 1, model);
 		m_EnvShader->SetUniformMat4fv("view", 1, m_View);
 		m_EnvShader->SetUniformMat4fv("projection", 1, m_Proj);
-		m_EnvShader->SetUniform1i("u_Texture", 0);
 		m_EnvShader->SetUniform4f("u_LightColor", m_LightSourceColor);
 		m_EnvShader->SetUniform1f("ambientStrength", m_EnvAmbientStrength);
 		m_EnvShader->SetUniform3f("lightPosition", m_LightSourcePosition);
@@ -173,12 +174,17 @@ namespace test
 		ImGui::ColorEdit4("Lighting Color\n", &m_LightSourceColor[0]);
 		ImGui::SliderFloat("Cube shininess", &m_EnvShininess, 2.0f, 256.0f);
 		ImGui::SliderFloat("Ground shininess\n", &m_GroundShininess, 2.0f, 256.0f);
-		ImGui::SliderFloat("Cube specular strength", &m_EnvAmbientStrength, 0.0f, 1.0f);
+		ImGui::SliderFloat("Cube specular strength", &m_EnvSpecularStrength, 0.0f, 1.0f);
 		ImGui::SliderFloat("Ground specular strength\n", &m_GroundSpecularStrength, 0.0f, 1.0f);
 
 	}
 	void TestFps::configureEnvironmentVAO(void)
 	{
+		// Texture load
+		m_EnvTexture = std::make_unique<Texture>("res/textures/brick.png");
+		m_EnvTextureSpecular = std::make_unique<Texture>("res/textures/brick_specular.png");
+		m_EnvTextureEmission = std::make_unique<Texture>("res/textures/brick_emission.jpg");
+		// Create objects
 		std::vector<Utils::CubeTex_Normal> cubes;
 		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(0.0f,  0.0f, 0.0f,  1.0f, 0.0f));
 		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(20.0f, 5.0f, 15.0f, 1.0f, 0.0f));
@@ -191,6 +197,7 @@ namespace test
 		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(10.5f, 0.2f, 40.5f, 1.0f, 0.0f));
 		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(10.3f, 1.0f, 50.5f, 1.0f, 0.0f));
 
+		// Configure
 		m_EnvVAO = std::make_unique<VertexArray>();
 		m_EnvVAO->Bind();
 
@@ -218,10 +225,15 @@ namespace test
 		m_EnvEBO = std::make_unique<IndexBuffer>(&indicesCubes[0], 36 * 10);
 
 		m_EnvShader = std::make_unique<Shader>("res/shaders/fps.shader");
+		m_EnvShader->Bind();
+		m_EnvTexture->Bind(0);
+		m_EnvTextureSpecular->Bind(1);
+		m_EnvTextureEmission->Bind(2);
+		m_EnvShader->SetUniform1i("u_Texture", 0);
+		m_EnvShader->SetUniform1i("u_TextureSpecular", 1);
+		m_EnvShader->SetUniform1i("u_TextureEmission", 2);
 
-		m_EnvTexture = std::make_unique<Texture>("res/textures/brick.png");
-		m_EnvTexture->Bind();
-
+		// Unbind
 		m_EnvVAO->Unbind();
 		m_EnvVBO->Unbind();
 		m_EnvEBO->Unbind();
