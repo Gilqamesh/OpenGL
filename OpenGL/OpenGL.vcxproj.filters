@@ -78,6 +78,9 @@
     <ClCompile Include="src\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\MaterialTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\Basic.shader" />
@@ -85,6 +88,7 @@
     <None Include="res\shaders\scene.shader" />
     <None Include="res\shaders\fps.shader" />
     <None Include="res\shaders\ground.shader" />
+    <None Include="res\shaders\lightSource.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Renderer.hpp">
@@ -175,6 +179,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headers\tests\TestFps.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\MaterialTypes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

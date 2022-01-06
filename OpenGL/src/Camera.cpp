@@ -1,14 +1,12 @@
 #include "Camera.hpp"
 #include "Utils.hpp"
 
-Camera::Camera() {}
-
 Camera::Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>& startUp,
     GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed)
     :position(startPosition), front(Vector<GLfloat, 3>(0.0f, 0.0f, -1.0f)), up(normalize(cross_product(right, front))),
     right(normalize(cross_product(front, worldUp))), worldUp(startUp),
     yaw(startYaw), pitch(startPitch), moveSpeed(startMoveSpeed), turnSpeed(startTurnSpeed),
-    cameraMode(FREE)
+    cameraMode(cameraModeType::FREE)
 {
     update();
 }
@@ -17,6 +15,9 @@ Camera::~Camera() {}
 
 void    Camera::keyControl(bool *keys, float deltaTime)
 {
+    if (cameraMode == cameraModeType::OFF)
+        return;
+
     GLfloat velocity = moveSpeed * static_cast<GLfloat>(deltaTime);
 
     mode_Front = front;
@@ -24,17 +25,17 @@ void    Camera::keyControl(bool *keys, float deltaTime)
     mode_Up = up;
     switch (cameraMode)
     {
-    case FREE:
+    case cameraModeType::FREE:
         mode_Front = front;
         mode_Right = right;
         mode_Up    = up;
         break;
-    case FPS:
+    case cameraModeType::FPS:
         mode_Front = Vector<float, 3>(front[0], 0.0f, front[2]);
         mode_Right = normalize(cross_product(mode_Front, worldUp));
         mode_Up    = Vector<float, 3>(0.0f, 1.0f, 0.0f);
         break;
-    case TOPDOWN:
+    case cameraModeType::TOPDOWN:
         mode_Front = Vector<float, 3>( 0.0f, 0.0f, 1.0f);
         mode_Right = Vector<float, 3>(-1.0f, 0.0f, 0.0f);
         mode_Up    = Vector<float, 3>( 0.0f, 1.0f, 0.0f);
@@ -69,6 +70,9 @@ void    Camera::keyControl(bool *keys, float deltaTime)
 
 void    Camera::mouseControl(GLfloat xChange, GLfloat yChange)
 {
+    if (cameraMode == cameraModeType::OFF)
+        return;
+
     xChange *= turnSpeed;
     yChange *= turnSpeed;
 
@@ -93,7 +97,7 @@ void Camera::update(void)
 {
     switch (cameraMode)
     {
-    case FREE:
+    case cameraModeType::FREE:
         front[0] = cos(Utils::radians(yaw)) * cos(Utils::radians(pitch));
         front[1] = sin(Utils::radians(pitch));
         front[2] = sin(Utils::radians(yaw)) * cos(Utils::radians(pitch));
@@ -101,7 +105,7 @@ void Camera::update(void)
         right = normalize(cross_product(front, worldUp));
         up = normalize(cross_product(right, front));
         break;
-    case FPS:
+    case cameraModeType::FPS:
         front[0] = cos(Utils::radians(yaw)) * cos(Utils::radians(pitch));
         front[1] = sin(Utils::radians(pitch));
         front[2] = sin(Utils::radians(yaw)) * cos(Utils::radians(pitch));
@@ -109,7 +113,7 @@ void Camera::update(void)
         right = normalize(cross_product(front, worldUp));
         up = normalize(cross_product(right, front));
         break;
-    case TOPDOWN:
+    case cameraModeType::TOPDOWN:
         front = Vector<float, 3>(0.0f, -1.0f, 0.0f);
         right = Vector<float, 3>(1.0f,  0.0f, 0.0f);
         up    = Vector<float, 3>(0.0f,  0.0f, 1.0f);

@@ -11,13 +11,13 @@
 class Camera
 {
     public:
-        enum cameraModeType {
+        enum class cameraModeType {
+            OFF,
             FREE,
             FPS,
             TOPDOWN
         };
 
-        Camera();
         Camera(const Vector<GLfloat, 3>& startPosition, const Vector<GLfloat, 3>& startUp,
             GLfloat startYaw, GLfloat startPitch,
             GLfloat startMoveSpeed, GLfloat startTurnSpeed);
@@ -26,12 +26,15 @@ class Camera
         void keyControl(bool *keys, float deltaTime);
         void mouseControl(GLfloat xChange, GLfloat yChange);
 
-        void           setMode(cameraModeType mode) { cameraMode = mode; }
-        cameraModeType getMode(void) const          { return (cameraMode); }
+        void                     setMode(cameraModeType mode)         { cameraMode = mode;   }
+        cameraModeType           getMode(void)                  const { return (cameraMode); }
+        const Vector<GLfloat, 3> &getPosition(void)             const { return (position);   }
 
         Matrix<GLfloat, 4, 4> calculateViewMatrix(void);
 
     private:
+        Camera();
+
         Vector<GLfloat, 3>    position;
         Vector<GLfloat, 3>    front;
         Vector<GLfloat, 3>    up;

@@ -34,8 +34,8 @@ class Vector
 
 		Vector &operator+=(const Vector &v) { for (unsigned int i = 0; i < LENGTH; ++i) (*this)[i] = (*this)[i] + v[i]; return (*this); }
 		Vector &operator-=(const Vector &v) { for (unsigned int i = 0; i < LENGTH; ++i) (*this)[i] = (*this)[i] - v[i]; return (*this); }
-		Vector &operator*=(const T &a)      { for (unsigned int i = 0; i < LENGTH; ++i) (*this)[i] = (*this)[i] * a; return (*this); }
-		Vector &operator/=(const T &a)      { for (unsigned int i = 0; i < LENGTH; ++i) (*this)[i] = (*this)[i] / a; return (*this); }
+		Vector &operator*=(const T &a)      { for (unsigned int i = 0; i < LENGTH; ++i) (*this)[i] = (*this)[i] * a;    return (*this); }
+		Vector &operator/=(const T &a)      { for (unsigned int i = 0; i < LENGTH; ++i) (*this)[i] = (*this)[i] / a;    return (*this); }
 
         T       &operator[](unsigned int index)       { return (data(0, index)); }
         T const &operator[](unsigned int index) const { return (data(0, index)); }

@@ -30,7 +30,11 @@ public:
 	// Set uniforms
 	void SetUniform1i(const std::string& name, int value);
 	void SetUniform1iv(const std::string&name, int count, int *value);
+	void SetUniform1f(const std::string& name, float value);
+	void SetUniform3f(const std::string& name, float f1, float f2, float f3);
+	void SetUniform3f(const std::string& name, const Vector<float, 3> vec3);
 	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
+	void SetUniform4f(const std::string& name, const Vector<float, 4> vec4);
 	void SetUniformMat4fv(const std::string &name, int count, const Matrix<float, 4, 4> &m);
 private:
 	int GetUniformLocation(const std::string& name);

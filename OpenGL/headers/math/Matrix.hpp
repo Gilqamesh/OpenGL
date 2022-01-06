@@ -71,8 +71,8 @@ Matrix<T, COLUMNS, ROWS> transpose(const Matrix<T, ROWS, COLUMNS> &m)
 {
     Matrix<T, COLUMNS, ROWS>    a;
 
-    for (unsigned int r = 0; r < m.get_rows(); ++r)
-        for (unsigned int c = 0; c < m.get_columns(); ++c)
+    for (unsigned int r = 0; r < ROWS; ++r)
+        for (unsigned int c = 0; c < COLUMNS; ++c)
             a(c, r) = m(r, c);
     return (a);
 }
@@ -186,6 +186,9 @@ Matrix<T, 4, 4> translation_matrix(const Vector<T, 3> &v)
     res(3, 3) = 1;
     return (res);
 }
+
+template <typename T>
+Matrix<T, 4, 4> normal_matrix(const Matrix<T, 4, 4>& m) { return (transpose(inverse(m))); }
 
 template <typename T>
 Matrix<T, 4, 4> projection_matrix_perspective(const T &fov, const T &aspect, const T &near, const T &far)
