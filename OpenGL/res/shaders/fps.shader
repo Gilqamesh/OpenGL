@@ -26,48 +26,50 @@ void main()
 #shader fragment
 #version 330 core
 
+# define MaterialColor_Tex		0
+# define MaterialColor_Normal	1
+
 struct Material
 {
-	enum colorType
-	{
-		TEX,
-		COLOR
-	};
+	int colorType;
 	union
 	{
 		struct
 		{
-			sampler2D tex;
-			sampler2D texSpecular;
-			sampler2D texEmission;
-		} t;
-		vec4 color;
+			sampler2D diffuseMap;
+			sampler2D specularMap;
+			sampler2D emissionMap;
+		} lightingMaps;
+		struct
+		{
+			vec3 ambientColor;
+			vec3 diffuseColor;
+			vec3 specularColor;
+		} color;
 	} color;
 
-	vec3	  specularColor;
 	float	  specularStrength;
-
 	float	  shininessFactor;
 };
 
+# define LightType_Point		0
+# define LightType_Directional	1
+
 struct Light
 {
-	enum type {
-		POINT,
-		DIRECTIONAL
-	};
+	int		type;
+	vec3	position;
 
-	vec3 position;
-
-	vec3 ambientColor;
-	vec3 diffuseColor;
-	vec3 specularColor;
+	vec3	ambientColor;
+	vec3	diffuseColor;
+	vec3	specularColor;
 
 	struct
 	{
 		float constant;
 		float linear;
 		float quadratic;
+
 	} attenuation_factor;
 };
 
@@ -80,7 +82,6 @@ in vec3 v_normalVec;
 uniform Light		light;
 uniform Material	material;
 uniform vec3		viewPos;
-uniform vec3		lightPosition;
 
 // Old Code
 //uniform sampler2D u_Texture;
@@ -114,44 +115,44 @@ void main()
 	vec3 diffuse;
 	vec3 specular;
 
-	if (material.colorType == TEX)
+	if (material.colorType == MaterialColor_Tex)
 	{
 		// Ambient
-		ambient = light.ambientColor * texture(material.color.t.tex, v_TexCoord).rgb;
+		ambient = light.ambientColor * texture(material.color.lightingMaps.diffuseMap, v_TexCoord).rgb;
 
 		// Diffuse
-		vec3	norm = normalize(v_normalVec);
-		vec3	lightDir = normalize(light.position - fragmentPosition);
-		float	diffuseStrength = max(dot(norm, lightDir), 0.0f);
-				diffuse = light.diffuseColor * diffuseStrength * texture(material.color.t.tex, v_TexCoord).rgb;
+		vec3	norm		  = normalize(v_normalVec);
+		vec3	lightDir	  = normalize(light.position - fragmentPosition);
+		float	diffuseFactor = max(dot(norm, lightDir), 0.0f);
+				diffuse		  = light.diffuseColor * diffuseFactor * texture(material.color.lightingMaps.diffuseMap, v_TexCoord).rgb;
 
 		// Specular
-		vec3	viewDir = normalize(viewPos - fragmentPosition);
-		vec3	reflectDir = reflect(-lightDir, norm);
-		float	specularStrength = pow(max(dot(viewDir, reflectDir), 0.0f), material.shininessFactor);
-		vec3	specular = light.specularColor * specularStrength * material.specularColor;
+		vec3	viewDir			 = normalize(viewPos - fragmentPosition);
+		vec3	reflectDir		 = reflect(-lightDir, norm);
+		float	specularFactor	 = pow(max(dot(viewDir, reflectDir), 0.0f), material.shininessFactor);
+		vec3	specular		 = light.specularColor * specularFactor * material.color.lightingMaps.specularMap;
 
 		// Emission
-		vec3	emission = texture(material.color.t.texEmission, v_TexCoord).rgb;
+		vec3	emission = texture(material.color.lightingMaps.emissionMap, v_TexCoord).rgb;
 
 		color = vec4(ambient + diffuse + specular + emission, 1.0f);
 	}
-	else if (material.colorType == COLOR)
+	else if (material.colorType == MaterialColor_Normal)
 	{
 		// Ambient
-		ambient = light.ambientColor * vec3(material.color.color);
+		ambient = light.ambientColor * material.color.color.ambientColor;
 
 		// Diffuse
-		vec3	norm = normalize(v_normalVec);
-		vec3	lightDir = normalize(light.position - fragmentPosition);
-		float	diffuseStrength = max(dot(norm, lightDir), 0.0f);
-				diffuse = light.diffuseColor * diffuseStrength * vec3(material.color.color);
+		vec3	norm		  = normalize(v_normalVec);
+		vec3	lightDir	  = normalize(light.position - fragmentPosition);
+		float	diffuseFactor = max(dot(norm, lightDir), 0.0f);
+				diffuse		  = light.diffuseColor * diffuseFactor * vec3(material.color.color.diffuseColor);
 
 		// Specular
-		vec3	viewDir = normalize(viewPos - fragmentPosition);
-		vec3	reflectDir = reflect(-lightDir, norm);
-		float	specularStrength = pow(max(dot(viewDir, reflectDir), 0.0f), material.shininessFactor);
-		vec3	specular = light.specularColor * specularStrength * material.specularColor;
+		vec3	viewDir		   = normalize(viewPos - fragmentPosition);
+		vec3	reflectDir	   = reflect(-lightDir, norm);
+		float	specularFactor = pow(max(dot(viewDir, reflectDir), 0.0f), material.shininessFactor);
+		vec3	specular	   = light.specularColor * specularFactor * material.color.color.specularColor;
 
 		color = vec4(ambient + diffuse + specular, 1.0f);
 	}

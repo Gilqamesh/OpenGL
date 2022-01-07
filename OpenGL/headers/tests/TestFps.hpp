@@ -14,6 +14,8 @@
 # include <memory>
 # include "Camera.hpp"
 # include "Utils.hpp"
+# include "MaterialTypes.hpp"
+# include "LightSource.hpp"
 
 namespace test
 {
@@ -48,32 +50,33 @@ namespace test
 		std::unique_ptr<VertexArray>	m_EnvVAO;
 		std::unique_ptr<VertexBuffer>	m_EnvVBO;
 		std::unique_ptr<IndexBuffer>	m_EnvEBO;
-		float							m_EnvAmbientStrength;
-		float							m_EnvSpecularStrength;
-		float							m_EnvShininess;
+		Material						m_EnvMaterial;
 
 		std::unique_ptr<VertexArray>	m_GroundVAO;
 		std::unique_ptr<VertexBuffer>	m_GroundVBO;
 		std::unique_ptr<IndexBuffer>	m_GroundEBO;
 		std::unique_ptr<Shader>			m_GroundShader;
-		float							m_GroundAmbientStrength;
-		float							m_GroundSpecularStrength;
-		float							m_GroundShininess;
+		Material						m_GroundMaterial;
 
-		std::unique_ptr<VertexArray>	m_LightSourceVAO;
-		std::unique_ptr<VertexBuffer>	m_LightSourceVBO;
-		std::unique_ptr<IndexBuffer>	m_LightSourceEBO;
-		std::unique_ptr<Shader>			m_LightSourceShader;
-		Vector<float, 4>				m_LightSourceColor;
-		Vector<float, 3>				m_LightSourcePosition;
+		std::unique_ptr<VertexArray>	m_LightSourcePointVAO;
+		std::unique_ptr<VertexBuffer>	m_LightSourcePointVBO;
+		std::unique_ptr<IndexBuffer>	m_LightSourcePointEBO;
+		std::unique_ptr<Shader>			m_LightSourcePointShader;
+		LightSource						m_LightSourcePoint;
 
 		std::vector<Utils::QuadColor_Normal>	groundQuads;
 		unsigned int							groundWidth;
 		unsigned int							groundHeight;
 
-		void configureEnvironmentVAO(void);
-		void configureGroundVAO(void);
-		void configureLightSourceVAO(void);
+		void TestFpsInit(void);
+
+		void configureEnvironment(void);
+		void configureGround(void);
+		void configureLightSourcePoint(void);
+
+		void renderEnvironment(void);
+		void renderGround(void);
+		void renderLightSourcePoint(void);
 	};
 }
 

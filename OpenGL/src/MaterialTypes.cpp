@@ -1,5 +1,36 @@
 #include "MaterialTypes.hpp"
 
+Material::Material(colorType type, float specularFactor, float shininessFactor,
+	const Vector<float, 3>& ambient, const Vector<float, 3>& diffuse, const Vector<float, 3>& specular)
+	: m_colorType(type), unionColor(ambient, diffuse, specular), specularFactor(specularFactor), shininessFactor(shininessFactor)
+{
+
+}
+
+Material::Material(colorType type, float specularFactor, float shininessFactor, int diffuse, int specular, int emission)
+	: m_colorType(type), unionColor(diffuse, specular, emission), specularFactor(specularFactor), shininessFactor(shininessFactor)
+{
+
+}
+
+Material::Material(const Material& m)
+	: m_colorType(m.m_colorType), unionColor(m.unionColor), specularFactor(m.specularFactor), shininessFactor(m.shininessFactor)
+{
+
+}
+
+Material& Material::operator=(const Material& m)
+{
+	if (this != &m)
+	{
+		m_colorType		= m.m_colorType;
+		unionColor		= m.unionColor;
+		specularFactor	= m.specularFactor;
+		shininessFactor = m.shininessFactor;
+	}
+	return (*this);
+}
+
 //const Material MaterialTypes::emerald =
 //{
 //    0.0215f, 0.1745f, 0.0215f,

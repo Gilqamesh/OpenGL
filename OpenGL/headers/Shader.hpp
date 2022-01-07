@@ -7,6 +7,8 @@
 # include <unordered_map>
 # include <math/Matrix.hpp>
 # include <GL/glew.h>
+# include "MaterialTypes.hpp"
+# include "LightSource.hpp"
 
 struct ShaderProgramSource
 {
@@ -36,6 +38,8 @@ public:
 	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
 	void SetUniform4f(const std::string& name, const Vector<float, 4> vec4);
 	void SetUniformMat4fv(const std::string &name, int count, const Matrix<float, 4, 4> &m);
+	void SetUniformMaterial(const Material &m);
+	void SetUniformLightSource(const LightSource &l);
 private:
 	int GetUniformLocation(const std::string& name);
 	ShaderProgramSource ParseShader(const std::string& filepath);

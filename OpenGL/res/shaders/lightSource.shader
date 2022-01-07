@@ -17,9 +17,30 @@ void main()
 
 layout(location = 0) out vec4 color;
 
-uniform vec4 lightSourceColor;
+# define LightType_Point		0
+# define LightType_Directional	1
+
+struct Light
+{
+	int		type;
+	vec3	position;
+
+	vec3	ambientColor;
+	vec3	diffuseColor;
+	vec3	specularColor;
+
+	struct
+	{
+		float constant;
+		float linear;
+		float quadratic;
+
+	} attenuation_factor;
+};
+
+uniform Light light;
 
 void main()
 {
-	color = lightSourceColor;
+	color = light.specularColor;
 }

@@ -81,6 +81,12 @@
     <ClCompile Include="src\MaterialTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="headers\LightSource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LightSource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\Basic.shader" />

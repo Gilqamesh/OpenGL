@@ -146,6 +146,37 @@ void Shader::SetUniformMat4fv(const std::string &name, int count, const Matrix<G
     GLCall(glUniformMatrix4fv(GetUniformLocation(name), count, GL_FALSE, &m));
 }
 
+void Shader::SetUniformMaterial(const Material& m)
+{
+    this->SetUniform1i("material.colorType", m.getColorType());
+    if (m.getColorType() == static_cast<int>(Material::colorType::TEX))
+    {
+        this->SetUniform1i("material.color.lightingMaps.diffuseMap", m.getDiffuseMap());
+        this->SetUniform1i("material.color.lightingMaps.specularMap", m.getSpecularMap());
+        this->SetUniform1i("material.color.lightingMaps.emissionMap", m.getEmissionMap());
+    }
+    else if (m.getColorType() == static_cast<int>(Material::colorType::COLOR))
+    {
+        this->SetUniform3f("material.color.color.ambientColor", m.getAmbientColor());
+        this->SetUniform3f("material.color.color.diffuseColor", m.getDiffuseColor());
+        this->SetUniform3f("material.color.color.specularColor", m.getSpecularColor());
+    }
+    this->SetUniform1f("material.specularStrength", m.getSpecularFactor());
+    this->SetUniform1f("material.shininessFactor", m.getShininessFactor());
+}
+
+void Shader::SetUniformLightSource(const LightSource& l)
+{
+    this->SetUniform1i("light.type", l.getType());
+    this->SetUniform3f("light.position", l.getPosition());
+    this->SetUniform3f("light.ambientColor", l.getAmbientColor());
+    this->SetUniform3f("light.diffuseColor", l.getDiffuseColor());
+    this->SetUniform3f("light.specularColor", l.getSpecularColor());
+    this->SetUniform1f("light.attenuation.constant", l.getAttenuation_Constant());
+    this->SetUniform1f("light.attenuation.linear", l.getAttenuation_Linear());
+    this->SetUniform1f("light.attenuation.quadratic", l.getAttenuation_Quadratic());
+}
+
 int Shader::GetUniformLocation(const std::string& name)
 {
     if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
