@@ -25,52 +25,40 @@ void main()
 
 #shader fragment
 #version 330 core
-
-# define MaterialColor_Tex		0
-# define MaterialColor_Normal	1
+#define MaterialColor_Tex 0
+#define MaterialColor_Normal 1
+#define LightType_Point 0
+#define LightType_Directional 1
+#define LightType_SpotLight 2
 
 struct Material
 {
 	int colorType;
-	union
-	{
-		struct
-		{
-			sampler2D diffuseMap;
-			sampler2D specularMap;
-			sampler2D emissionMap;
-		} lightingMaps;
-		struct
-		{
-			vec3 ambientColor;
-			vec3 diffuseColor;
-			vec3 specularColor;
-		} color;
-	} color;
-
-	float	  specularStrength;
-	float	  shininessFactor;
+	sampler2D diffuseMap;
+	sampler2D specularMap;
+	int hasSpecularMap;
+	sampler2D emissionMap;
+	int hasEmissionMap;
+	vec3 ambientColor;
+	vec3 diffuseColor;
+	vec3 specularColor;
+	float shininessFactor;
 };
-
-# define LightType_Point		0
-# define LightType_Directional	1
 
 struct Light
 {
-	int		type;
-	vec3	position;
-
-	vec3	ambientColor;
-	vec3	diffuseColor;
-	vec3	specularColor;
-
-	struct
-	{
-		float constant;
-		float linear;
-		float quadratic;
-
-	} attenuation_factor;
+	int type;
+	vec3 position;
+	vec3 color;
+	vec3 direction;
+	float innerCutOffAngle;
+	float outerCutOffAngle;
+	float ambientFactor;
+	float diffuseFactor;
+	float specularFactor;
+	float attenuation_factor_constant;
+	float attenuation_factor_linear;
+	float attenuation_factor_quadratic;
 };
 
 layout(location = 0) out vec4 color;
@@ -83,33 +71,8 @@ uniform Light		light;
 uniform Material	material;
 uniform vec3		viewPos;
 
-// Old Code
-//uniform sampler2D u_Texture;
-//uniform sampler2D u_TextureSpecular;
-//uniform sampler2D u_TextureEmission;
-//uniform vec4 u_LightColor;
-//uniform float ambientStrength;
-//uniform vec3 lightPosition;
-//uniform vec3 viewPos;
-//uniform float specularStrength;
-//uniform float shininess;
-
 void main()
 {
-	// Old code
-	// Ambient
-	// vec3 ambient = vec3(u_LightColor) * ambientStrength * texture(u_Texture, v_TexCoord).rgb;
-	// Diffuse
-	// vec3 norm = normalize(v_normalVec);
-	// vec3 lightDir = normalize(lightPosition - fragmentPosition);
-	// float diffStrength = max(dot(norm, lightDir), 0.0f);
-	// vec3 diffuse = vec3(u_LightColor) * diffStrength * texture(u_Texture, v_TexCoord).rgb;
-	// Specular
-	// vec3 viewDir = normalize(viewPos - fragmentPosition);
-	// vec3 reflectDir = reflect(-lightDir, norm);
-	// float spec = pow(max(dot(viewDir, reflectDir), 0.0f), shininess);
-	//vec3 specular = specularStrength * spec * vec3(u_LightColor) * texture(u_TextureSpecular, v_TexCoord).rgb;
-
 	// New code
 	vec3 ambient;
 	vec3 diffuse;
@@ -118,41 +81,86 @@ void main()
 	if (material.colorType == MaterialColor_Tex)
 	{
 		// Ambient
-		ambient = light.ambientColor * texture(material.color.lightingMaps.diffuseMap, v_TexCoord).rgb;
+		ambient = light.ambientFactor * light.color * texture(material.diffuseMap, v_TexCoord).rgb;
 
 		// Diffuse
 		vec3	norm		  = normalize(v_normalVec);
 		vec3	lightDir	  = normalize(light.position - fragmentPosition);
 		float	diffuseFactor = max(dot(norm, lightDir), 0.0f);
-				diffuse		  = light.diffuseColor * diffuseFactor * texture(material.color.lightingMaps.diffuseMap, v_TexCoord).rgb;
+				diffuse		  = light.diffuseFactor * light.color * diffuseFactor * texture(material.diffuseMap, v_TexCoord).rgb;
 
 		// Specular
 		vec3	viewDir			 = normalize(viewPos - fragmentPosition);
 		vec3	reflectDir		 = reflect(-lightDir, norm);
 		float	specularFactor	 = pow(max(dot(viewDir, reflectDir), 0.0f), material.shininessFactor);
-		vec3	specular		 = light.specularColor * specularFactor * material.color.lightingMaps.specularMap;
+		vec3 specular			 = light.specularFactor * light.color * specularFactor * texture(
+			(material.specularMap != -1 ? material.specularMap : material.diffuseMap), v_TexCoord).rgb;
 
 		// Emission
-		vec3	emission = texture(material.color.lightingMaps.emissionMap, v_TexCoord).rgb;
+		vec3 emission = (material.emissionMap != -1 ? texture(material.emissionMap, v_TexCoord).rgb : vec3(0.0f, 0.0f, 0.0f));
+
+		float intensity = 1.0f;
+		// Spotlight
+		if (light.type == LightType_SpotLight)
+		{
+			float theta = dot(lightDir, normalize(-light.direction));
+			float epsilon = light.innerCutOffAngle - light.outerCutOffAngle;
+			intensity = clamp((theta - light.outerCutOffAngle) / epsilon, 0.0f, 1.0f);
+			if (theta < light.outerCutOffAngle)
+			{
+				diffuse = vec3(0.0f, 0.0f, 0.0f);
+				specular = vec3(0.0f, 0.0f, 0.0f);
+			}
+		}
+
+		// Attenuation factor
+		float	distance = length(light.position - fragmentPosition);
+		float	attenuation_factor = 1.0f / (light.attenuation_factor_constant + light.attenuation_factor_linear * distance
+							  * light.attenuation_factor_quadratic * distance * distance);
+		ambient  *= attenuation_factor;
+		diffuse  *= attenuation_factor * intensity;
+		specular *= attenuation_factor * intensity;
 
 		color = vec4(ambient + diffuse + specular + emission, 1.0f);
 	}
 	else if (material.colorType == MaterialColor_Normal)
 	{
 		// Ambient
-		ambient = light.ambientColor * material.color.color.ambientColor;
+		ambient = light.ambientFactor * light.color * material.ambientColor;
 
 		// Diffuse
 		vec3	norm		  = normalize(v_normalVec);
 		vec3	lightDir	  = normalize(light.position - fragmentPosition);
 		float	diffuseFactor = max(dot(norm, lightDir), 0.0f);
-				diffuse		  = light.diffuseColor * diffuseFactor * vec3(material.color.color.diffuseColor);
+				diffuse		  = light.diffuseFactor * light.color * diffuseFactor * vec3(material.diffuseColor);
 
 		// Specular
 		vec3	viewDir		   = normalize(viewPos - fragmentPosition);
 		vec3	reflectDir	   = reflect(-lightDir, norm);
 		float	specularFactor = pow(max(dot(viewDir, reflectDir), 0.0f), material.shininessFactor);
-		vec3	specular	   = light.specularColor * specularFactor * material.color.color.specularColor;
+		vec3	specular	   = light.specularFactor * light.color * specularFactor * material.specularColor;
+
+		float intensity = 1.0f;
+		// Spotlight
+		if (light.type == LightType_SpotLight)
+		{
+			float theta = dot(lightDir, normalize(-light.direction));
+			float epsilon = light.innerCutOffAngle - light.outerCutOffAngle;
+			intensity = clamp((theta - light.outerCutOffAngle) / epsilon, 0.0f, 1.0f);
+			if (theta < light.outerCutOffAngle)
+			{
+				diffuse = vec3(0.0f, 0.0f, 0.0f);
+				specular = vec3(0.0f, 0.0f, 0.0f);
+			}
+		}
+
+		// Attenuation factor
+		float	distance = length(light.position - fragmentPosition);
+		float	attenuation_factor = 1.0f / (light.attenuation_factor_constant + light.attenuation_factor_linear * distance
+							  * light.attenuation_factor_quadratic * distance * distance);
+		ambient  *= attenuation_factor;
+		diffuse  *= attenuation_factor * intensity;
+		specular *= attenuation_factor * intensity;
 
 		color = vec4(ambient + diffuse + specular, 1.0f);
 	}

@@ -26,9 +26,10 @@ class Camera
         void keyControl(bool *keys, float deltaTime);
         void mouseControl(GLfloat xChange, GLfloat yChange);
 
-        void                     setMode(cameraModeType mode)         { cameraMode = mode;   }
-        cameraModeType           getMode(void)                  const { return (cameraMode); }
-        const Vector<GLfloat, 3> &getPosition(void)             const { return (position);   }
+        void                      setMode(cameraModeType mode)         { cameraMode = mode;   }
+        cameraModeType            getMode(void)                 const { return (cameraMode); }
+        const Vector<GLfloat, 3>& getPosition(void)             const { return (position);   }
+        const Vector<GLfloat, 3>& getDirection(void)            const { return (front); }
 
         Matrix<GLfloat, 4, 4> calculateViewMatrix(void);
 

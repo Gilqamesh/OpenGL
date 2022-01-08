@@ -15,9 +15,16 @@ public:
 	};
 
 	Material() { }
-	Material(colorType type, float specularFactor, float shininessFactor,
-			 const Vector<float, 3> &ambient, const Vector<float, 3> &diffuse, const Vector<float, 3> &specular);
-	Material(colorType type, float specularFactor, float shininessFactor, int diffuse = 0, int specular = 0, int emission = 0);
+	Material(colorType type, float shininessFactor, const Vector<float, 3>& ambient, const Vector<float, 3>& diffuse, const Vector<float, 3>& specular, const Vector<float, 3>& emission)
+		: m_colorType(type), unionColor(ambient, diffuse, specular, emission), shininessFactor(shininessFactor) { }
+	Material(colorType type, float shininessFactor, const Vector<float, 3>& ambient, const Vector<float, 3>& diffuse, const Vector<float, 3> &specular)
+		: m_colorType(type), unionColor(ambient, diffuse, specular), shininessFactor(shininessFactor) { }
+	Material(colorType type, float shininessFactor, const Vector<float, 3>& ambient, const Vector<float, 3>& diffuse)
+		: m_colorType(type), unionColor(ambient, diffuse, Vector<float, 3>(0.5f, 0.5f, 0.5f)), shininessFactor(shininessFactor) { }
+	Material(colorType type, float shininessFactor, const Vector<float, 3>& ambient)
+		: m_colorType(type), unionColor(ambient, ambient, Vector<float, 3>(0.5f, 0.5f, 0.5f)), shininessFactor(shininessFactor) { }
+
+	Material(colorType type, float shininessFactor, int diffuse = -1, int specular = -1, int emission = -1);
 	Material(const Material& m);
 	Material& operator=(const Material& m);
 
@@ -45,7 +52,6 @@ public:
 	void setSpecularColor(const Vector<float, 3>& specular) { unionColor.color.specularColor = specular; }
 	void setSpecularMap(int specular)						{ unionColor.maps.specularMap = specular;	 }
 	void setEmissionMap(int emission)						{ unionColor.maps.emissionMap = emission;	 }
-	void setSpecularFactor(float strength)				    { specularFactor = strength;				 }
 	void setShininessFactor(float factor)				    { shininessFactor = factor;					 }
 
 	Vector<float, 3>&	setAmbientColor(void)		{ return (unionColor.color.ambientColor);	}
@@ -54,7 +60,6 @@ public:
 	Vector<float, 3>&	setSpecularColor(void)		{ return (unionColor.color.specularColor);	}
 	int&				setSpecularMap(void)		{ return (unionColor.maps.specularMap);		}
 	int&				setEmissionMap(void)		{ return (unionColor.maps.emissionMap);		}
-	float&				setSpecularFactor(void)		{ return (specularFactor);					}
 	float&				setShininessFactor(void)	{ return (shininessFactor);					}
 
 	inline int						getColorType(void)	      const { return (static_cast<int>(m_colorType));  }
@@ -63,8 +68,7 @@ public:
 	inline int						getDiffuseMap(void)		  const { return (unionColor.maps.diffuseMap);	   }
 	inline const Vector<float, 3>&  getSpecularColor(void)    const { return (unionColor.color.specularColor); }
 	inline int						getSpecularMap(void)	  const { return (unionColor.maps.specularMap);	   }
-	inline int						getEmissionMap(void)	  const { return (unionColor.maps.specularMap);	   }
-	inline float					getSpecularFactor(void)	  const { return (specularFactor);				   }
+	inline int						getEmissionMap(void)	  const { return (unionColor.maps.emissionMap);	   }
 	inline float					getShininessFactor(void)  const { return (shininessFactor);				   }
 private:
 	class lightingMaps
@@ -84,18 +88,18 @@ private:
 			}
 		}
 
-		int diffuseMap;
-		int specularMap;
-		int emissionMap;
+		int		diffuseMap;
+		int		specularMap;
+		int		emissionMap;
 	};
 	class materialColor
 	{
 	public:
 		materialColor() { }
-		materialColor(const Vector<float, 3>& ambientC, const Vector<float, 3>& diffuseC, const Vector<float, 3>& specularC)
-			: ambientColor(ambientC), diffuseColor(diffuseC), specularColor(specularC) { }
+		materialColor(const Vector<float, 3>& ambientC, const Vector<float, 3>& diffuseC, const Vector<float, 3>& specularC, const Vector<float, 3>& emissionC = Vector<float, 3>(0.0f, 0.0f, 0.0f))
+			: ambientColor(ambientC), diffuseColor(diffuseC), specularColor(specularC), emissionColor(emissionC) { }
 		materialColor(const materialColor &m)
-			: ambientColor(m.ambientColor), diffuseColor(m.diffuseColor), specularColor(m.specularColor) { }
+			: ambientColor(m.ambientColor), diffuseColor(m.diffuseColor), specularColor(m.specularColor), emissionColor(m.emissionColor) { }
 		materialColor& operator=(const materialColor& m)
 		{
 			if (this != &m)
@@ -103,18 +107,22 @@ private:
 				ambientColor = m.ambientColor;
 				diffuseColor = m.diffuseColor;
 				specularColor = m.specularColor;
+				emissionColor = m.emissionColor;
 			}
 		}
 
 		Vector<float, 3> ambientColor;
 		Vector<float, 3> diffuseColor;
 		Vector<float, 3> specularColor;
+		Vector<float, 3> emissionColor;
 	};
 	union uColor
 	{
 		uColor() { }
 		uColor(const Vector<float, 3>& ambient, const Vector<float, 3>& diffuse, const Vector<float, 3>& specular)
 			: color(ambient, diffuse, specular) { }
+		uColor(const Vector<float, 3>& ambient, const Vector<float, 3>& diffuse, const Vector<float, 3>& specular, const Vector<float, 3>& emission)
+			: color(ambient, diffuse, specular, emission) { }
 		uColor(int diffuse, int specular, int emission) : maps(diffuse, specular, emission) { }
 		uColor(const uColor& u) { std::memcpy(this, &u, sizeof(uColor)); }
 		uColor& operator=(const uColor& u) { if (this != &u) std::memcpy(this, &u, sizeof(uColor)); return (*this); }
@@ -126,7 +134,6 @@ private:
 
 	colorType			 m_colorType;
 	uColor				 unionColor;
-	float				 specularFactor;
 	float				 shininessFactor;
 };
 

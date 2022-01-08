@@ -151,7 +151,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="headers\LightSource.cpp" />
     <ClCompile Include="headers\vendor\imgui\imgui.cpp" />
     <ClCompile Include="headers\vendor\imgui\imgui_demo.cpp" />
     <ClCompile Include="headers\vendor\imgui\imgui_draw.cpp" />
@@ -182,6 +181,10 @@
     <None Include="res\shaders\fps.shader" />
     <None Include="res\shaders\ground.shader" />
     <None Include="res\shaders\lightSource.shader" />
+    <None Include="res\shaders\lightSource\lightSource.fs" />
+    <None Include="res\shaders\lightSource\lightSource.vs" />
+    <None Include="res\shaders\material\material.fs" />
+    <None Include="res\shaders\material\material.vs" />
     <None Include="res\shaders\scene.shader" />
   </ItemGroup>
   <ItemGroup>

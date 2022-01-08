@@ -29,7 +29,7 @@
 
 int main(void)
 {
-    Window window("Hello World", 1366, 768);
+    Window window("Hello World", 1340, 680);
 
     {
 
@@ -64,8 +64,7 @@ int main(void)
                 currentTest->OnUpdate(deltaTime);
                 currentTest->OnRender();
                 ImGui::Begin("Test");
-                if (currentTest != testMenu
-                    && (ImGui::Button("Back to menu <-") || window.getKeys()[GLFW_KEY_BACKSPACE]))
+                if (currentTest != testMenu && window.getKeys()[GLFW_KEY_BACKSPACE])
                 {
                     delete currentTest;
                     currentTest = testMenu;

@@ -10,8 +10,24 @@
 Shader::Shader(const std::string& filepath)
 	: m_FilePath(filepath), m_RendererID(0)
 {
-    ShaderProgramSource source = ParseShader(filepath);
-    m_RendererID = CreateShader(source.VertexSource, source.FragmentSource);
+    ShaderProgramSource source = ParseShaders(filepath);
+    m_RendererID = CreateShaders(source.VertexSource, source.FragmentSource);
+}
+
+Shader::Shader(const std::string& filepath, const std::string& name)
+    : m_FilePath(filepath), shaderName(name)
+{
+    ShaderProgramSource source = ParseShaders(filepath);
+    m_RendererID = CreateShaders(source.VertexSource, source.FragmentSource);
+}
+
+Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const std::string& name)
+    : m_VertexShaderPath(vertexShaderPath), m_FragmentShaderPath(fragmentShaderPath), shaderName(name)
+{
+    std::string vertexShaderCode = ParseShader(m_VertexShaderPath);
+    std::string fragmentSaderCode = ParseShader(m_FragmentShaderPath);
+
+    m_RendererID = CreateShaders(vertexShaderCode, fragmentSaderCode);
 }
 
 Shader::~Shader()
@@ -29,14 +45,9 @@ void Shader::Unbind() const
     GLCall(glUseProgram(0));
 }
 
-ShaderProgramSource Shader::ParseShader(const std::string &filepath)
+Shader::ShaderProgramSource Shader::ParseShaders(const std::string &filepath)
 {
     std::ifstream stream(filepath);
-
-    enum class ShaderType
-    {
-        NONE = -1, VERTEX = 0, FRAGMENT = 1
-    };
 
     std::string line;
     std::stringstream ss[2];
@@ -61,6 +72,17 @@ ShaderProgramSource Shader::ParseShader(const std::string &filepath)
     return { ss[0].str(), ss[1].str() };
 }
 
+std::string Shader::ParseShader(const std::string& filepath)
+{
+    std::ifstream stream(filepath);
+
+    std::string line;
+    std::stringstream ss;
+    while (getline(stream, line))
+        ss << line << "\n";
+    return (ss.str());
+}
+
 unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 {
     unsigned int id = glCreateShader(type);
@@ -78,10 +100,9 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
         //char* message = (char*)alloca(length * sizeof(char));
         char* message = new char[length];
         glGetShaderInfoLog(id, length, &length, message);
-        std::cout << "Failed to compile "
-            << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader!" << std::endl;
+        std::cout << "Failed to compile shader! " << shaderName << std::endl;
         std::cout << message << std::endl;
-        delete message;
+        delete [] message;
         glDeleteShader(id);
         return (0);
     }
@@ -89,7 +110,7 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
     return (id);
 }
 
-unsigned int Shader::CreateShader(const std::string& vertexShader, const std::string& fragmentShader)
+unsigned int Shader::CreateShaders(const std::string& vertexShader, const std::string& fragmentShader)
 {
     unsigned int program = glCreateProgram();
     unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
@@ -102,6 +123,20 @@ unsigned int Shader::CreateShader(const std::string& vertexShader, const std::st
 
     glDeleteShader(vs);
     glDeleteShader(fs);
+
+    return (program);
+}
+
+unsigned int Shader::CreateShader(const std::string& shaderCode, GLuint shaderType)
+{
+    unsigned int program = glCreateProgram();
+    unsigned int shaderId = CompileShader(shaderType, shaderCode);
+
+    glAttachShader(program, shaderId);
+    glLinkProgram(program);
+    glValidateProgram(program);
+
+    glDeleteShader(shaderId);
 
     return (program);
 }
@@ -151,17 +186,19 @@ void Shader::SetUniformMaterial(const Material& m)
     this->SetUniform1i("material.colorType", m.getColorType());
     if (m.getColorType() == static_cast<int>(Material::colorType::TEX))
     {
-        this->SetUniform1i("material.color.lightingMaps.diffuseMap", m.getDiffuseMap());
-        this->SetUniform1i("material.color.lightingMaps.specularMap", m.getSpecularMap());
-        this->SetUniform1i("material.color.lightingMaps.emissionMap", m.getEmissionMap());
+        this->SetUniform1i("material.diffuseMap", m.getDiffuseMap());
+        this->SetUniform1i("material.specularMap", m.getSpecularMap());
+        this->SetUniform1i("material.hasSpecularMap", m.getSpecularMap() != -1);
+        if (m.getEmissionMap() != -1)
+            this->SetUniform1i("material.emissionMap", m.getEmissionMap());
+        this->SetUniform1i("material.hasEmissionMap", m.getEmissionMap() != -1);
     }
     else if (m.getColorType() == static_cast<int>(Material::colorType::COLOR))
     {
-        this->SetUniform3f("material.color.color.ambientColor", m.getAmbientColor());
-        this->SetUniform3f("material.color.color.diffuseColor", m.getDiffuseColor());
-        this->SetUniform3f("material.color.color.specularColor", m.getSpecularColor());
+        this->SetUniform3f("material.ambientColor", m.getAmbientColor());
+        this->SetUniform3f("material.diffuseColor", m.getDiffuseColor());
+        this->SetUniform3f("material.specularColor", m.getSpecularColor());
     }
-    this->SetUniform1f("material.specularStrength", m.getSpecularFactor());
     this->SetUniform1f("material.shininessFactor", m.getShininessFactor());
 }
 
@@ -169,12 +206,32 @@ void Shader::SetUniformLightSource(const LightSource& l)
 {
     this->SetUniform1i("light.type", l.getType());
     this->SetUniform3f("light.position", l.getPosition());
-    this->SetUniform3f("light.ambientColor", l.getAmbientColor());
-    this->SetUniform3f("light.diffuseColor", l.getDiffuseColor());
-    this->SetUniform3f("light.specularColor", l.getSpecularColor());
-    this->SetUniform1f("light.attenuation.constant", l.getAttenuation_Constant());
-    this->SetUniform1f("light.attenuation.linear", l.getAttenuation_Linear());
-    this->SetUniform1f("light.attenuation.quadratic", l.getAttenuation_Quadratic());
+    this->SetUniform3f("light.color", l.getColor());
+    this->SetUniform3f("light.direction", l.getDirection());
+    this->SetUniform1f("light.innerCutOffAngle", cos(l.getInnerCutOffAngle()));
+    this->SetUniform1f("light.outerCutOffAngle", cos(l.getOuterCutOffAngle()));
+    this->SetUniform1f("light.ambientFactor", l.getAmbientFactor());
+    this->SetUniform1f("light.diffuseFactor", l.getDiffuseFactor());
+    this->SetUniform1f("light.specularFactor", l.getSpecularFactor());
+    this->SetUniform1f("light.attenuation_factor_constant", l.getAttenuation_Constant());
+    this->SetUniform1f("light.attenuation_factor_linear", l.getAttenuation_Linear());
+    this->SetUniform1f("light.attenuation_factor_quadratic", l.getAttenuation_Quadratic());
+}
+
+void Shader::SetUniformLightSource(const LightSource& l, int id)
+{
+    this->SetUniform1i("light[" + std::to_string(id) + "].type", l.getType());
+    this->SetUniform3f("light[" + std::to_string(id) + "].position", l.getPosition());
+    this->SetUniform3f("light[" + std::to_string(id) + "].color", l.getColor());
+    this->SetUniform3f("light[" + std::to_string(id) + "].direction", l.getDirection());
+    this->SetUniform1f("light[" + std::to_string(id) + "].innerCutOffAngle", cos(l.getInnerCutOffAngle()));
+    this->SetUniform1f("light[" + std::to_string(id) + "].outerCutOffAngle", cos(l.getOuterCutOffAngle()));
+    this->SetUniform1f("light[" + std::to_string(id) + "].ambientFactor", l.getAmbientFactor());
+    this->SetUniform1f("light[" + std::to_string(id) + "].diffuseFactor", l.getDiffuseFactor());
+    this->SetUniform1f("light[" + std::to_string(id) + "].specularFactor", l.getSpecularFactor());
+    this->SetUniform1f("light[" + std::to_string(id) + "].attenuation_factor_constant", l.getAttenuation_Constant());
+    this->SetUniform1f("light[" + std::to_string(id) + "].attenuation_factor_linear", l.getAttenuation_Linear());
+    this->SetUniform1f("light[" + std::to_string(id) + "].attenuation_factor_quadratic", l.getAttenuation_Quadratic());
 }
 
 int Shader::GetUniformLocation(const std::string& name)
@@ -184,7 +241,7 @@ int Shader::GetUniformLocation(const std::string& name)
 
     GLCall(int location = glGetUniformLocation(m_RendererID, name.c_str()));
     if (location == -1)
-        std::cout << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+        std::cout << "Warning: uniform '" << name << "' doesn't exist! " << shaderName << std::endl;
     
     m_UniformLocationCache[name] = location;
     return (location);

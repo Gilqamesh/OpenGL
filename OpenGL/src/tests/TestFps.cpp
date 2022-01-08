@@ -6,19 +6,20 @@ namespace test
 	void TestFps::TestFpsInit(void)
 	{
 		m_View = translation_matrix(Vector<float, 3>(0.0f, 0.0f, 5.0f));
-		//m_Camera = Camera(Vector<GLfloat, 3>(0.0f, 5.0f, 0.0f), Vector<GLfloat, 3>(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.25f);
 		groundWidth = 10;
 		groundHeight = 10;
 		m_CameraMode = Camera::cameraModeType::FREE;
 		m_MoveSpeed = 5.0f;
-		m_EnvMaterial = Material(Material::colorType::TEX, 0.5f, 32.0f);
-		m_LightSourcePoint = LightSource(LightSource::LightType::POINT, Vector<float, 3>(20.0f, 20.0f, 20.0f), Vector<float, 3>(0.1f, 0.1f, 0.1f),
-			Vector<float, 3>(0.5f, 0.5f, 0.5f), Vector<float, 3>(1.0f, 1.0f, 1.0f));
-		m_GroundMaterial = Material(Material::colorType::COLOR, 0.5f, 32.0f);
+		m_EnvMaterial = Material(Material::colorType::TEX, 32.0f);
+		m_LightSourcePoint = LightSource(LightSource::LightType::POINT, Vector<float, 3>(20.0f, 20.0f, 20.0f), Vector<float, 3>(1.0f, 1.0f, 1.0f),
+			0.1f, 0.5f, 1.0f);
+		m_GroundMaterial = Material(Material::colorType::COLOR, 32.0f, Vector<float, 3>(0.3f, 0.15f, 0.1f));
 	}
-	
+
 	TestFps::TestFps(Window& window)
-		: m_window(window), m_Camera(Vector<GLfloat, 3>(0.0f, 5.0f, 0.0f), Vector<GLfloat, 3>(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.25f)
+		: m_window(window), m_Camera(Vector<GLfloat, 3>(0.0f, 5.0f, 0.0f), Vector<GLfloat, 3>(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.25f),
+		m_LightSourceSpotLight(LightSource::LightType::SPOTLIGHT, Vector<float, 3>(0.0f, 5.0f, 0.0f), Vector<float, 3>(1.0f, 1.0f, 0.0f),
+			Vector<float, 3>(0.0f, 0.0f, -1.0f), Utils::radians(10.0f), Utils::radians(12.5f), 0.0f, 0.5f, 1.0f)
 	{
 		TestFpsInit();
 		glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -96,6 +97,8 @@ namespace test
 		m_Camera.setMode(m_CameraMode);
 		m_Camera.mouseControl(m_window.getXChange(), m_window.getYChange());
 		m_Camera.keyControl(m_window.getKeys(), deltaTime);
+		m_LightSourceSpotLight.setPosition() = m_Camera.getPosition();
+		m_LightSourceSpotLight.setDirection() = m_Camera.getDirection();
 		m_View = m_Camera.calculateViewMatrix();
 	}
 
@@ -110,30 +113,116 @@ namespace test
 
 	void TestFps::OnImGuiRender()
 	{
-		ImGui::Text("Camera options:\n(0) OFF\n(1) Free camera\n(2) FPS\n(3) Top Down\n\n");
-		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Current mode: ");
-		switch (m_Camera.getMode())
+		enum menuSetting
 		{
-		case Camera::cameraModeType::OFF:
-			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "OFF\n\n");
+			MENU,
+			POINT_LIGHT,
+			SPOT_LIGHT,
+			CUBES,
+			GROUND
+		};
+
+		static menuSetting currentSetting;
+		static bool hasEmissionMap = m_EnvMaterial.getEmissionMap() != -1;
+
+		switch (currentSetting)
+		{
+		case MENU:
+			ImGui::Text("Camera options:\n(0) OFF\n(1) Free camera\n(2) FPS\n(3) Top Down\n\n");
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Current mode: ");
+			switch (m_Camera.getMode())
+			{
+			case Camera::cameraModeType::OFF:
+				ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "OFF\n\n");
+				break;
+			case Camera::cameraModeType::FREE:
+				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Free\n\n");
+				break;
+			case Camera::cameraModeType::FPS:
+				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "FPS\n\n");
+				break;
+			case Camera::cameraModeType::TOPDOWN:
+				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Top down\n\n");
+				break;
+			}
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Lighting Settings");
+			if (ImGui::Button("Point Light"))
+				currentSetting = POINT_LIGHT;
+			if (ImGui::Button("Spot Light"))
+				currentSetting = SPOT_LIGHT;
+
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Cube Settings");
+			if (ImGui::Button("Cubes"))
+				currentSetting = CUBES;
+
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Ground Settings");
+			if (ImGui::Button("Ground"))
+				currentSetting = GROUND;
 			break;
-		case Camera::cameraModeType::FREE:
-			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Free\n\n");
+		case POINT_LIGHT:
+			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Point Light Settings\n\n");
+
+			ImGui::ColorEdit3("Color\n", &m_LightSourcePoint.setColor()[0]);
+
+			ImGui::SliderFloat("Ambient Factor\n", &m_LightSourcePoint.setAmbientFactor(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Diffuse Factor\n", &m_LightSourcePoint.setDiffuseFactor(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Specular Factor\n", &m_LightSourcePoint.setSpecularFactor(), 0.0f, 1.0f);
+
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Attenuation\n");
+			ImGui::SliderFloat("Constant factor\n", &m_LightSourcePoint.setAttenuationFactor_Constant(), 1.0f, 10.0f);
+			ImGui::SliderFloat("Linear factor\n", &m_LightSourcePoint.setAttenuationFactor_Linear(), 0.0014f, 0.7f);
+			ImGui::SliderFloat("Quadratic factor\n", &m_LightSourcePoint.setAttenuationFactor_Quadratic(), 0.000007f, 1.8f);
+
+			ImGui::SliderFloat3("Position", &m_LightSourcePoint.setPosition(), 0.0f, 100.0f);
+
+			if (ImGui::Button("back <-"))
+				currentSetting = MENU;
 			break;
-		case Camera::cameraModeType::FPS:
-			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "FPS\n\n");
+		case SPOT_LIGHT:
+			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Spot Light Settings\n\n");
+
+			ImGui::ColorEdit3("Color\n", &m_LightSourceSpotLight.setColor()[0]);
+
+			ImGui::SliderFloat("Ambient Factor\n", &m_LightSourceSpotLight.setAmbientFactor(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Diffuse Factor\n", &m_LightSourceSpotLight.setDiffuseFactor(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Specular Factor\n", &m_LightSourceSpotLight.setSpecularFactor(), 0.0f, 1.0f);
+
+			ImGui::SliderFloat("Inner Cutoff Angle\n", &m_LightSourceSpotLight.setInnerCutOffAngle(), 0.0f, Utils::radians(m_window.getZoom()));
+			ImGui::SliderFloat("Outer Cutoff Angle\n", &m_LightSourceSpotLight.setOuterCutOffAngle(), 0.0f, Utils::radians(m_window.getZoom()));
+
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Attenuation\n");
+			ImGui::SliderFloat("Constant factor\n", &m_LightSourceSpotLight.setAttenuationFactor_Constant(), 1.0f, 10.0f);
+			ImGui::SliderFloat("Linear factor\n", &m_LightSourceSpotLight.setAttenuationFactor_Linear(), 0.0014f, 0.7f);
+			ImGui::SliderFloat("Quadratic factor\n", &m_LightSourceSpotLight.setAttenuationFactor_Quadratic(), 0.000007f, 1.8f);
+
+			if (ImGui::Button("back <-"))
+				currentSetting = MENU;
 			break;
-		case Camera::cameraModeType::TOPDOWN:
-			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Top down\n\n");
+		case CUBES:
+			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Cube Settings\n\n");
+
+			ImGui::SliderFloat("Shininess", &m_EnvMaterial.setShininessFactor(), 2.0f, 256.0f);
+
+			if (ImGui::Checkbox("Emission map", &hasEmissionMap))
+				m_EnvMaterial.setEmissionMap(hasEmissionMap ? 2 : -1);
+
+			if (ImGui::Button("back <-"))
+				currentSetting = MENU;
+			break;
+		case GROUND:
+			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Ground Settings\n\n");
+
+			ImGui::ColorEdit3("Ambient Color", &m_GroundMaterial.setAmbientColor()[0]);
+			ImGui::ColorEdit3("Diffuse Color", &m_GroundMaterial.setDiffuseColor()[0]);
+			ImGui::ColorEdit3("Specular Color", &m_GroundMaterial.setSpecularColor()[0]);
+			ImGui::SliderFloat("Shininess\n", &m_GroundMaterial.setShininessFactor(), 2.0f, 256.0f);
+
+			if (ImGui::Button("back <-"))
+				currentSetting = MENU;
 			break;
 		}
-		ImGui::ColorEdit4("Lighting Color\n", &m_LightSourcePoint.setSpecularColor()[0]);
-		ImGui::SliderFloat("Cube shininess", &m_EnvMaterial.setShininessFactor(), 2.0f, 256.0f);
-		ImGui::SliderFloat("Ground shininess\n", &m_GroundMaterial.setShininessFactor(), 2.0f, 256.0f);
-		ImGui::SliderFloat("Cube specular strength", &m_EnvMaterial.setSpecularFactor(), 0.0f, 1.0f);
-		ImGui::SliderFloat("Ground specular strength\n", &m_GroundMaterial.setSpecularFactor(), 0.0f, 1.0f);
-
 	}
+	
 	void TestFps::configureEnvironment(void)
 	{
 		// Texture load
@@ -180,14 +269,15 @@ namespace test
 		}
 		m_EnvEBO = std::make_unique<IndexBuffer>(&indicesCubes[0], 36 * 10);
 
-		m_EnvShader = std::make_unique<Shader>("res/shaders/fps.shader");
+		m_EnvShader = std::make_unique<Shader>("res/shaders/material/material.vs",
+			"res/shaders/material/material.fs", "Environment Shader");
 		m_EnvShader->Bind();
 		m_EnvTexture->Bind(0);
 		m_EnvTextureSpecular->Bind(1);
 		m_EnvTextureEmission->Bind(2);
-		m_EnvShader->SetUniform1i("u_Texture", 0);
-		m_EnvShader->SetUniform1i("u_TextureSpecular", 1);
-		m_EnvShader->SetUniform1i("u_TextureEmission", 2);
+		m_EnvMaterial.setDiffuseMap(0);
+		m_EnvMaterial.setSpecularMap(1);
+		m_EnvMaterial.setEmissionMap(-1); // 2
 
 		// Unbind
 		m_EnvVAO->Unbind();
@@ -209,19 +299,21 @@ namespace test
 				i * 4 + 0
 				});
 		}
-		m_GroundShader = std::make_unique<Shader>("res/shaders/ground.shader");
+		m_GroundShader = std::make_unique<Shader>("res/shaders/material/material.vs",
+			"res/shaders/material/material.fs", "Ground Shader");
 		m_GroundVAO = std::make_unique<VertexArray>();
 		m_GroundVAO->Bind();
 		m_GroundEBO = std::make_unique<IndexBuffer>(&indicesGround[0], 6 * 10000);
 		for (unsigned int j = 0; j < 100; ++j)
 			for (unsigned int i = 0; i < 100; ++i)
-				groundQuads.push_back(Utils::CreateQuad_Normal<Utils::QuadColor_Normal>
-					(static_cast<float>(i), 0.0f, static_cast<float>(j), 1.0f, 0.3f, 0.15f, 0.075f, 1.0f));
+				groundQuads.push_back(Utils::CreateQuad_Normal<Utils::QuadTex_Normal>
+					(static_cast<float>(i), 0.0f, static_cast<float>(j), 1.0f, 1.0f));
 		m_GroundMaterial.setColors(Vector<float, 3>(1.0f, 0.3f, 0.15f));
-		m_GroundVBO = std::make_unique<VertexBuffer>(groundQuads.size() * sizeof(Utils::QuadColor_Normal), &groundQuads[0]);
+		m_GroundVBO = std::make_unique<VertexBuffer>(groundQuads.size() * sizeof(Utils::QuadTex_Normal), &groundQuads[0]);
 		VertexBufferLayout layoutGround;
 		layoutGround.Push<float>(3);
-		layoutGround.Push<float>(4);
+		layoutGround.Push<float>(2);
+		layoutGround.Push<float>(1);
 		layoutGround.Push<float>(3);
 		m_GroundVAO->AddBuffer(*m_GroundVBO, layoutGround);
 
@@ -234,7 +326,8 @@ namespace test
 	void TestFps::configureLightSourcePoint(void)
 	{
 		// Shader
-		m_LightSourcePointShader = std::make_unique<Shader>("res/shaders/lightSource.shader");
+		m_LightSourcePointShader = std::make_unique<Shader>("res/shaders/lightSource/lightSource.vs",
+			"res/shaders/lightSource/lightSource.fs", "LightSourcePoint Shader");
 
 		// Configure
 		m_LightSourcePointVAO = std::make_unique<VertexArray>();
@@ -254,6 +347,7 @@ namespace test
 		m_LightSourcePointVBO->Unbind();
 		m_LightSourcePointEBO->Unbind();
 	}
+	
 	void TestFps::renderEnvironment(void)
 	{
 		m_EnvVAO->Bind();
@@ -264,7 +358,8 @@ namespace test
 		m_EnvShader->SetUniformMat4fv("projection", 1, m_Proj);
 		m_EnvShader->SetUniformMat4fv("normalMatrix", 1, normal_matrix(model));
 		m_EnvShader->SetUniform3f("viewPos", m_Camera.getPosition());
-		m_EnvShader->SetUniformLightSource(m_LightSourcePoint);
+		m_EnvShader->SetUniformLightSource(m_LightSourcePoint, 0);
+		m_EnvShader->SetUniformLightSource(m_LightSourceSpotLight, 1);
 		m_EnvShader->SetUniformMaterial(m_EnvMaterial);
 		GLCall(glDrawElements(GL_TRIANGLES, 36 * 10, GL_UNSIGNED_INT, nullptr));
 		m_EnvVAO->Unbind();
@@ -280,7 +375,8 @@ namespace test
 		m_GroundShader->SetUniformMat4fv("projection", 1, m_Proj);
 		m_GroundShader->SetUniformMat4fv("normalMatrix", 1, normal_matrix(model));
 		m_GroundShader->SetUniform3f("viewPos", m_Camera.getPosition());
-		m_GroundShader->SetUniformLightSource(m_LightSourcePoint);
+		m_GroundShader->SetUniformLightSource(m_LightSourcePoint, 0);
+		m_GroundShader->SetUniformLightSource(m_LightSourceSpotLight, 1);
 		m_GroundShader->SetUniformMaterial(m_GroundMaterial);
 		GLCall(glDrawElements(GL_TRIANGLES, 6 * 100 * 100, GL_UNSIGNED_INT, nullptr));
 		m_GroundVAO->Unbind();

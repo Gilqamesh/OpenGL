@@ -64,7 +64,9 @@ namespace test
 		std::unique_ptr<Shader>			m_LightSourcePointShader;
 		LightSource						m_LightSourcePoint;
 
-		std::vector<Utils::QuadColor_Normal>	groundQuads;
+		LightSource						m_LightSourceSpotLight;
+
+		std::vector<Utils::QuadTex_Normal>		groundQuads;
 		unsigned int							groundWidth;
 		unsigned int							groundHeight;
 

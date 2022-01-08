@@ -81,9 +81,6 @@
     <ClCompile Include="src\MaterialTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="headers\LightSource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\LightSource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -95,6 +92,10 @@
     <None Include="res\shaders\fps.shader" />
     <None Include="res\shaders\ground.shader" />
     <None Include="res\shaders\lightSource.shader" />
+    <None Include="res\shaders\material\material.fs" />
+    <None Include="res\shaders\material\material.vs" />
+    <None Include="res\shaders\lightSource\lightSource.vs" />
+    <None Include="res\shaders\lightSource\lightSource.fs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Renderer.hpp">
