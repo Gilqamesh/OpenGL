@@ -29,14 +29,22 @@ class Matrix
     friend Matrix<T, ROWS, COLUMNS> cofactor<T, ROWS, COLUMNS>(const Matrix<T, ROWS, COLUMNS> &m);
     friend Matrix<T, ROWS, COLUMNS> adjugate<T, ROWS, COLUMNS>(const Matrix<T, ROWS, COLUMNS> &m);
     private:
-        std::array<T, ROWS * COLUMNS>                   data;
+        std::array<T, ROWS * COLUMNS>                   entries;
     public:
-        Matrix():                                       data()              { }
+        Matrix():                                       entries()              { }
+        Matrix(T* a)
+        {
+            for (unsigned int i = 0; i < ROWS * COLUMNS; ++i)
+                entries[i] = a[i];
+        }
         template <typename... Args>
-        Matrix(const Args & ... args):                  data({args...})     { }
+        Matrix(const Args & ... args):                  entries({args...})     { }
         ~Matrix()                                                           { }
-        Matrix(const Matrix &m):                        data(m.data)        { }
-        Matrix &operator=(const Matrix &m)                                  { if (&*this != &m) data = m.data; return (*this); }
+        Matrix(const Matrix &m):                        entries(m.entries)        { }
+        Matrix &operator=(const Matrix &m)                                  { if (this != &m) entries = m.entries; return (*this); }
+
+        T*        data(void)        { return (entries.data()); }
+        const T*  data(void) const  { return (entries.data()); }
 
         // ONLY FOR SQUARE MATRICES
         T       determinant(void)       { return (::determinant(*this)); }
@@ -56,11 +64,8 @@ class Matrix
         Matrix &operator*=(const T &f)      { *this = *this * f; return (*this); }
         Matrix &operator*=(const Matrix &m) { *this = *this * m; return (*this); }
 
-        T       &operator()(unsigned int r, unsigned int c)       { return (data.at(r * COLUMNS + c)); }
-        T const &operator()(unsigned int r, unsigned int c) const { return (data.at(r * COLUMNS + c)); }
-
-        T       *operator&()        { return (&data[0]); }
-        T const *operator&() const  { return (&data[0]); }
+        T       &operator()(unsigned int r, unsigned int c)       { return (entries.at(r * COLUMNS + c)); }
+        T const &operator()(unsigned int r, unsigned int c) const { return (entries.at(r * COLUMNS + c)); }
 };
 
 template <typename T, unsigned int LENGTH>

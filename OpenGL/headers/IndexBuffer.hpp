@@ -9,7 +9,10 @@ private:
 	unsigned int m_Count;
 	unsigned int m_RendererID;
 public:
-	IndexBuffer(const void *data, unsigned int count);
+	IndexBuffer();
+	IndexBuffer(const void* data, unsigned int count);
+	IndexBuffer(const IndexBuffer&);
+	IndexBuffer& operator=(const IndexBuffer&);
 	~IndexBuffer();
 
 	void Bind()   const;

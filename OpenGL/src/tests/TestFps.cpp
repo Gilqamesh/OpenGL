@@ -6,20 +6,26 @@ namespace test
 	void TestFps::TestFpsInit(void)
 	{
 		m_View = translation_matrix(Vector<float, 3>(0.0f, 0.0f, 5.0f));
-		groundWidth = 10;
-		groundHeight = 10;
 		m_CameraMode = Camera::cameraModeType::FREE;
 		m_MoveSpeed = 5.0f;
-		m_EnvMaterial = Material(Material::colorType::TEX, 32.0f);
-		m_LightSourcePoint = LightSource(LightSource::LightType::POINT, Vector<float, 3>(20.0f, 20.0f, 20.0f), Vector<float, 3>(1.0f, 1.0f, 1.0f),
+		m_EnvMaterial = Material(32.0f);
+		m_LightSourcePoint = LightSource(LightSource::LightType::POINT, Vector<float, 3>(20.0f, 20.0f, 20.0f), Vector<float, 4>(1.0f, 1.0f, 1.0f, 1.0f),
 			0.1f, 0.5f, 1.0f);
-		m_GroundMaterial = Material(Material::colorType::COLOR, 32.0f, Vector<float, 3>(0.3f, 0.15f, 0.1f));
+		ambient = Texture(Vector<float, 4>(0.3f, 0.15f, 0.1f, 1.0f));
+		diffuse = Texture(Vector<float, 4>(0.3f, 0.15f, 0.1f, 1.0f));
+		specular = Texture(Vector<float, 4>(0.5f, 0.5f, 0.5f, 1.0f));
+		emission = Texture(Vector<float, 4>(0.0f, 0.0f, 0.0f, 1.0f));
+		//m_GroundMaterial = Material(32.0f, Vector<float, 3>(0.3f, 0.15f, 0.1f));
+		m_GroundMaterial = Material(32.0f, ambient, diffuse, specular, emission);
+		backpackShader = std::make_unique<Shader>("res/shaders/material/material.vert", "res/shaders/material/material.frag", "Backpack Shader");
 	}
 
 	TestFps::TestFps(Window& window)
-		: m_window(window), m_Camera(Vector<GLfloat, 3>(0.0f, 5.0f, 0.0f), Vector<GLfloat, 3>(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.25f),
-		m_LightSourceSpotLight(LightSource::LightType::SPOTLIGHT, Vector<float, 3>(0.0f, 5.0f, 0.0f), Vector<float, 3>(1.0f, 1.0f, 0.0f),
-			Vector<float, 3>(0.0f, 0.0f, -1.0f), Utils::radians(10.0f), Utils::radians(12.5f), 0.0f, 0.5f, 1.0f)
+		: m_window(window),
+		m_Camera(Vector<GLfloat, 3>(0.0f, 5.0f, 0.0f), Vector<GLfloat, 3>(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.25f),
+		m_LightSourceSpotLight(LightSource::LightType::SPOTLIGHT, Vector<float, 3>(0.0f, 5.0f, 0.0f), Vector<float, 4>(1.0f, 1.0f, 0.0f, 1.0f),
+			Vector<float, 3>(0.0f, 0.0f, -1.0f), Utils::radians(10.0f), Utils::radians(12.5f), 0.0f, 0.5f, 1.0f),
+		backpackModel("res/models/backpack/backpack.obj")
 	{
 		TestFpsInit();
 		glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -109,6 +115,7 @@ namespace test
 		renderEnvironment();
 		renderGround();
 		renderLightSourcePoint();
+		renderModels();
 	}
 
 	void TestFps::OnImGuiRender()
@@ -123,7 +130,6 @@ namespace test
 		};
 
 		static menuSetting currentSetting;
-		static bool hasEmissionMap = m_EnvMaterial.getEmissionMap() != -1;
 
 		switch (currentSetting)
 		{
@@ -162,7 +168,7 @@ namespace test
 		case POINT_LIGHT:
 			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Point Light Settings\n\n");
 
-			ImGui::ColorEdit3("Color\n", &m_LightSourcePoint.setColor()[0]);
+			ImGui::ColorEdit4("Color\n", &m_LightSourcePoint.setColor()[0]);
 
 			ImGui::SliderFloat("Ambient Factor\n", &m_LightSourcePoint.setAmbientFactor(), 0.0f, 1.0f);
 			ImGui::SliderFloat("Diffuse Factor\n", &m_LightSourcePoint.setDiffuseFactor(), 0.0f, 1.0f);
@@ -173,7 +179,7 @@ namespace test
 			ImGui::SliderFloat("Linear factor\n", &m_LightSourcePoint.setAttenuationFactor_Linear(), 0.0014f, 0.7f);
 			ImGui::SliderFloat("Quadratic factor\n", &m_LightSourcePoint.setAttenuationFactor_Quadratic(), 0.000007f, 1.8f);
 
-			ImGui::SliderFloat3("Position", &m_LightSourcePoint.setPosition(), 0.0f, 100.0f);
+			ImGui::SliderFloat3("Position", m_LightSourcePoint.setPosition().data(), 0.0f, 100.0f);
 
 			if (ImGui::Button("back <-"))
 				currentSetting = MENU;
@@ -181,7 +187,7 @@ namespace test
 		case SPOT_LIGHT:
 			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Spot Light Settings\n\n");
 
-			ImGui::ColorEdit3("Color\n", &m_LightSourceSpotLight.setColor()[0]);
+			ImGui::ColorEdit4("Color\n", &m_LightSourceSpotLight.setColor()[0]);
 
 			ImGui::SliderFloat("Ambient Factor\n", &m_LightSourceSpotLight.setAmbientFactor(), 0.0f, 1.0f);
 			ImGui::SliderFloat("Diffuse Factor\n", &m_LightSourceSpotLight.setDiffuseFactor(), 0.0f, 1.0f);
@@ -203,18 +209,12 @@ namespace test
 
 			ImGui::SliderFloat("Shininess", &m_EnvMaterial.setShininessFactor(), 2.0f, 256.0f);
 
-			if (ImGui::Checkbox("Emission map", &hasEmissionMap))
-				m_EnvMaterial.setEmissionMap(hasEmissionMap ? 2 : -1);
-
 			if (ImGui::Button("back <-"))
 				currentSetting = MENU;
 			break;
 		case GROUND:
 			ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Ground Settings\n\n");
 
-			ImGui::ColorEdit3("Ambient Color", &m_GroundMaterial.setAmbientColor()[0]);
-			ImGui::ColorEdit3("Diffuse Color", &m_GroundMaterial.setDiffuseColor()[0]);
-			ImGui::ColorEdit3("Specular Color", &m_GroundMaterial.setSpecularColor()[0]);
 			ImGui::SliderFloat("Shininess\n", &m_GroundMaterial.setShininessFactor(), 2.0f, 256.0f);
 
 			if (ImGui::Button("back <-"))
@@ -225,40 +225,42 @@ namespace test
 	
 	void TestFps::configureEnvironment(void)
 	{
-		// Texture load
-		m_EnvTexture = std::make_unique<Texture>("res/textures/brick.png");
-		m_EnvTextureSpecular = std::make_unique<Texture>("res/textures/brick_specular.png");
-		m_EnvTextureEmission = std::make_unique<Texture>("res/textures/brick_emission.jpg");
-		// Create objects
-		std::vector<Utils::CubeTex_Normal> cubes;
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(0.0f,  0.0f, 0.0f,  1.0f, 0.0f));
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(20.0f, 5.0f, 15.0f, 1.0f, 0.0f));
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(10.5f, 2.2f, 2.5f,  1.0f, 0.0f));
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(30.8f, 2.0f, 12.3f, 1.0f, 0.0f));
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(20.4f, 0.4f, 3.5f,  1.0f, 0.0f));
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(10.7f, 3.0f, 7.5f,  1.0f, 0.0f));
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(10.3f, 2.0f, 30.5f, 1.0f, 0.0f));
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(10.5f, 2.0f, 20.5f, 1.0f, 0.0f));
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(10.5f, 0.2f, 40.5f, 1.0f, 0.0f));
-		cubes.push_back(Utils::CreateCube_Normal<Utils::CubeTex_Normal>(10.3f, 1.0f, 50.5f, 1.0f, 0.0f));
+		m_EnvShader = std::make_unique<Shader>("res/shaders/material/material.vert", "res/shaders/material/material.frag", "Environment Shader");
 
-		// Configure
-		m_EnvVAO = std::make_unique<VertexArray>();
-		m_EnvVAO->Bind();
+		std::array<Mesh::Vertex, 24> temp = Utils::CreateCube(0.0f, 0.0f, 0.0f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
+		temp = Utils::CreateCube(20.0f, 5.0f, 15.0f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
+		temp = Utils::CreateCube(10.5f, 2.2f, 2.5f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
+		temp = Utils::CreateCube(30.8f, 2.0f, 12.3f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
+		temp = Utils::CreateCube(20.4f, 0.4f, 3.5f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
+		temp = Utils::CreateCube(10.7f, 3.0f, 7.5f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
+		temp = Utils::CreateCube(10.3f, 2.0f, 30.5f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
+		temp = Utils::CreateCube(10.5f, 2.0f, 20.5f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
+		temp = Utils::CreateCube(10.5f, 0.2f, 40.5f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
+		temp = Utils::CreateCube(10.3f, 1.0f, 50.5f, 1.0f);
+		for (unsigned int i = 0; i < 24; ++i)
+			envCubes.push_back(temp[i]);
 
-		m_EnvVBO = std::make_unique<VertexBuffer>(sizeof(Utils::CubeTex_Normal) * 10, &cubes[0]);
-
-		VertexBufferLayout layout;
-		layout.Push<float>(3);
-		layout.Push<float>(2);
-		layout.Push<float>(1);
-		layout.Push<float>(3);
-		m_EnvVAO->AddBuffer(*m_EnvVBO, layout);
-
-		std::vector<std::array<unsigned int, 36>> indicesCubes;
 		for (unsigned int i = 0; i < 10; ++i)
 		{
-			indicesCubes.push_back({
+			indicesEnvCubes.insert(indicesEnvCubes.end(), {
 				i * 24 + 0,  i * 24 + 1,  i * 24 + 2,  i * 24 + 2,  i * 24 + 3,  i * 24 + 0,
 				i * 24 + 4,  i * 24 + 5,  i * 24 + 6,  i * 24 + 6,  i * 24 + 7,  i * 24 + 4,
 				i * 24 + 8,  i * 24 + 9,  i * 24 + 10, i * 24 + 10, i * 24 + 11, i * 24 + 8,
@@ -267,30 +269,19 @@ namespace test
 				i * 24 + 20, i * 24 + 21, i * 24 + 22, i * 24 + 22, i * 24 + 23, i * 24 + 20
 				});
 		}
-		m_EnvEBO = std::make_unique<IndexBuffer>(&indicesCubes[0], 36 * 10);
 
-		m_EnvShader = std::make_unique<Shader>("res/shaders/material/material.vs",
-			"res/shaders/material/material.fs", "Environment Shader");
-		m_EnvShader->Bind();
-		m_EnvTexture->Bind(0);
-		m_EnvTextureSpecular->Bind(1);
-		m_EnvTextureEmission->Bind(2);
-		m_EnvMaterial.setDiffuseMap(0);
-		m_EnvMaterial.setSpecularMap(1);
-		m_EnvMaterial.setEmissionMap(-1); // 2
-
-		// Unbind
-		m_EnvVAO->Unbind();
-		m_EnvVBO->Unbind();
-		m_EnvEBO->Unbind();
-		m_EnvShader->Unbind();
+		m_textures.push_back(std::make_unique<Texture>("res/textures/brick.png"));
+		m_textures.push_back(std::make_unique<Texture>("res/textures/brick_specular.png"));
+		m_textures.push_back(std::make_unique<Texture>("res/textures/brick_emission.jpg"));
+		m_EnvMaterial.addTexture(*m_textures[0], *m_textures[0], *m_textures[1]);
+		m_EnvMesh = std::make_unique<Mesh>(envCubes, indicesEnvCubes, m_EnvMaterial);
 	}
+
 	void TestFps::configureGround(void)
 	{
-		std::vector<std::array<unsigned int, 6>> indicesGround;
 		for (unsigned int i = 0; i < 10000; ++i)
 		{
-			indicesGround.push_back({
+			indicesGroundQuads.insert(indicesGroundQuads.end(), {
 				i * 4 + 0,
 				i * 4 + 1,
 				i * 4 + 2,
@@ -299,46 +290,38 @@ namespace test
 				i * 4 + 0
 				});
 		}
-		m_GroundShader = std::make_unique<Shader>("res/shaders/material/material.vs",
-			"res/shaders/material/material.fs", "Ground Shader");
-		m_GroundVAO = std::make_unique<VertexArray>();
-		m_GroundVAO->Bind();
-		m_GroundEBO = std::make_unique<IndexBuffer>(&indicesGround[0], 6 * 10000);
-		for (unsigned int j = 0; j < 100; ++j)
-			for (unsigned int i = 0; i < 100; ++i)
-				groundQuads.push_back(Utils::CreateQuad_Normal<Utils::QuadTex_Normal>
-					(static_cast<float>(i), 0.0f, static_cast<float>(j), 1.0f, 1.0f));
-		m_GroundMaterial.setColors(Vector<float, 3>(1.0f, 0.3f, 0.15f));
-		m_GroundVBO = std::make_unique<VertexBuffer>(groundQuads.size() * sizeof(Utils::QuadTex_Normal), &groundQuads[0]);
-		VertexBufferLayout layoutGround;
-		layoutGround.Push<float>(3);
-		layoutGround.Push<float>(2);
-		layoutGround.Push<float>(1);
-		layoutGround.Push<float>(3);
-		m_GroundVAO->AddBuffer(*m_GroundVBO, layoutGround);
 
-		// Unbind
-		m_GroundVAO->Unbind();
-		m_GroundVBO->Unbind();
-		m_GroundEBO->Unbind();
-		m_GroundShader->Unbind();
+		m_GroundShader = std::make_unique<Shader>("res/shaders/material/material.vert","res/shaders/material/material.frag", "Ground Shader");
+		for (unsigned int j = 0; j < 100; ++j)
+		{
+			for (unsigned int i = 0; i < 100; ++i)
+			{
+				auto temp = Utils::CreateQuad(static_cast<float>(i), 0.0f, static_cast<float>(j), 1.0f);
+				for (auto vertex : temp)
+					groundQuads.push_back(vertex);
+			}
+		}
+
+		m_GroundMesh = std::make_unique<Mesh>(groundQuads, indicesGroundQuads, m_GroundMaterial);
 	}
 	void TestFps::configureLightSourcePoint(void)
 	{
 		// Shader
-		m_LightSourcePointShader = std::make_unique<Shader>("res/shaders/lightSource/lightSource.vs",
-			"res/shaders/lightSource/lightSource.fs", "LightSourcePoint Shader");
+		m_LightSourcePointShader = std::make_unique<Shader>("res/shaders/lightSource/lightSource.vert",
+			"res/shaders/lightSource/lightSource.frag", "LightSourcePoint Shader");
 
 		// Configure
 		m_LightSourcePointVAO = std::make_unique<VertexArray>();
 		m_LightSourcePointVAO->Bind();
-		Utils::CubePosition cube = Utils::CreateCube<Utils::CubePosition>(0.0f, 0.0f, 0.0f, 1.0f);
-		m_LightSourcePointVBO = std::make_unique<VertexBuffer>(sizeof(Utils::CubePosition), &cube[0]);
+		auto cube = Utils::CreateCube(0.0f, 0.0f, 0.0f, 1.0f);
+		m_LightSourcePointVBO = std::make_unique<VertexBuffer>(sizeof(cube), &cube[0]);
 		VertexBufferLayout layoutLightSource;
 		layoutLightSource.Push<float>(3);
+		layoutLightSource.Push<float>(3);
+		layoutLightSource.Push<float>(2);
 		m_LightSourcePointVAO->AddBuffer(*m_LightSourcePointVBO, layoutLightSource);
 
-		Utils::CubeIndeces cubeIndeces = Utils::CreateCube_Indices();
+		auto cubeIndeces = Utils::CreateCube_Indices();
 		m_LightSourcePointEBO = std::make_unique<IndexBuffer>(&cubeIndeces[0], 36);
 
 		// Unbind
@@ -350,7 +333,6 @@ namespace test
 	
 	void TestFps::renderEnvironment(void)
 	{
-		m_EnvVAO->Bind();
 		m_EnvShader->Bind();
 		Matrix<float, 4, 4> model(identity_matrix<float, 4, 4>());
 		m_EnvShader->SetUniformMat4fv("model", 1, model);
@@ -360,14 +342,11 @@ namespace test
 		m_EnvShader->SetUniform3f("viewPos", m_Camera.getPosition());
 		m_EnvShader->SetUniformLightSource(m_LightSourcePoint, 0);
 		m_EnvShader->SetUniformLightSource(m_LightSourceSpotLight, 1);
-		m_EnvShader->SetUniformMaterial(m_EnvMaterial);
-		GLCall(glDrawElements(GL_TRIANGLES, 36 * 10, GL_UNSIGNED_INT, nullptr));
-		m_EnvVAO->Unbind();
+		m_EnvMesh->drawMesh(*m_EnvShader);
 		m_EnvShader->Unbind();
 	}
 	void TestFps::renderGround(void)
 	{
-		m_GroundVAO->Bind();
 		m_GroundShader->Bind();
 		Matrix<float, 4, 4> model = identity_matrix<float, 4, 4>();
 		m_GroundShader->SetUniformMat4fv("model", 1, model);
@@ -377,14 +356,14 @@ namespace test
 		m_GroundShader->SetUniform3f("viewPos", m_Camera.getPosition());
 		m_GroundShader->SetUniformLightSource(m_LightSourcePoint, 0);
 		m_GroundShader->SetUniformLightSource(m_LightSourceSpotLight, 1);
-		m_GroundShader->SetUniformMaterial(m_GroundMaterial);
-		GLCall(glDrawElements(GL_TRIANGLES, 6 * 100 * 100, GL_UNSIGNED_INT, nullptr));
-		m_GroundVAO->Unbind();
+		m_GroundMesh->drawMesh(*m_GroundShader);
 		m_GroundShader->Unbind();
 	}
 	void TestFps::renderLightSourcePoint(void)
 	{
 		m_LightSourcePointVAO->Bind();
+		m_LightSourcePointVBO->Bind();
+		m_LightSourcePointEBO->Bind();
 		m_LightSourcePointShader->Bind();
 		Matrix<float, 4, 4> model = scale_matrix(Vector<float, 3>(0.1f, 0.1f, 0.1f)) * translation_matrix(m_LightSourcePoint.getPosition());
 		m_LightSourcePointShader->SetUniformMat4fv("model", 1, model);
@@ -393,6 +372,14 @@ namespace test
 		m_LightSourcePointShader->SetUniformLightSource(m_LightSourcePoint);
 		GLCall(glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr));
 		m_LightSourcePointVAO->Unbind();
+		m_LightSourcePointVBO->Unbind();
+		m_LightSourcePointEBO->Unbind();
 		m_LightSourcePointShader->Unbind();
+	}
+	void TestFps::renderModels(void)
+	{
+		backpackShader->Bind();
+		backpackModel.draw(*backpackShader);
+		backpackShader->Unbind();
 	}
 }

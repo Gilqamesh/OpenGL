@@ -7,6 +7,11 @@
 
 #include "Renderer.hpp"
 
+Shader::Shader()
+{
+
+}
+
 Shader::Shader(const std::string& filepath)
 	: m_FilePath(filepath), m_RendererID(0)
 {
@@ -75,6 +80,8 @@ Shader::ShaderProgramSource Shader::ParseShaders(const std::string &filepath)
 std::string Shader::ParseShader(const std::string& filepath)
 {
     std::ifstream stream(filepath);
+    if (!stream)
+        throw std::runtime_error("Could not open shader file for parsing: " + filepath);
 
     std::string line;
     std::stringstream ss;
@@ -85,25 +92,25 @@ std::string Shader::ParseShader(const std::string& filepath)
 
 unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 {
-    unsigned int id = glCreateShader(type);
+    GLCall(unsigned int id = glCreateShader(type));
     const char* src = source.c_str();
-    glShaderSource(id, 1, &src, nullptr);
-    glCompileShader(id);
+    GLCall(glShaderSource(id, 1, &src, nullptr));
+    GLCall(glCompileShader(id));
 
     int result;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+    GLCall(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
     if (result == GL_FALSE)
     {
         int length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+        GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
         // c-type allocation I think? Idk why are we using it here instead of new then delete
         //char* message = (char*)alloca(length * sizeof(char));
         char* message = new char[length];
-        glGetShaderInfoLog(id, length, &length, message);
+        GLCall(glGetShaderInfoLog(id, length, &length, message));
         std::cout << "Failed to compile shader! " << shaderName << std::endl;
         std::cout << message << std::endl;
         delete [] message;
-        glDeleteShader(id);
+        GLCall(glDeleteShader(id));
         return (0);
     }
 
@@ -112,17 +119,17 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 
 unsigned int Shader::CreateShaders(const std::string& vertexShader, const std::string& fragmentShader)
 {
-    unsigned int program = glCreateProgram();
+    GLCall(unsigned int program = glCreateProgram());
     unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
     unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    glValidateProgram(program);
+    GLCall(glAttachShader(program, vs));
+    GLCall(glAttachShader(program, fs));
+    GLCall(glLinkProgram(program));
+    GLCall(glValidateProgram(program));
 
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+    GLCall(glDeleteShader(vs));
+    GLCall(glDeleteShader(fs));
 
     return (program);
 }
@@ -178,35 +185,14 @@ void Shader::SetUniform4f(const std::string& name, const Vector<float, 4> vec4)
 
 void Shader::SetUniformMat4fv(const std::string &name, int count, const Matrix<GLfloat, 4, 4> &m)
 {
-    GLCall(glUniformMatrix4fv(GetUniformLocation(name), count, GL_FALSE, &m));
-}
-
-void Shader::SetUniformMaterial(const Material& m)
-{
-    this->SetUniform1i("material.colorType", m.getColorType());
-    if (m.getColorType() == static_cast<int>(Material::colorType::TEX))
-    {
-        this->SetUniform1i("material.diffuseMap", m.getDiffuseMap());
-        this->SetUniform1i("material.specularMap", m.getSpecularMap());
-        this->SetUniform1i("material.hasSpecularMap", m.getSpecularMap() != -1);
-        if (m.getEmissionMap() != -1)
-            this->SetUniform1i("material.emissionMap", m.getEmissionMap());
-        this->SetUniform1i("material.hasEmissionMap", m.getEmissionMap() != -1);
-    }
-    else if (m.getColorType() == static_cast<int>(Material::colorType::COLOR))
-    {
-        this->SetUniform3f("material.ambientColor", m.getAmbientColor());
-        this->SetUniform3f("material.diffuseColor", m.getDiffuseColor());
-        this->SetUniform3f("material.specularColor", m.getSpecularColor());
-    }
-    this->SetUniform1f("material.shininessFactor", m.getShininessFactor());
+    GLCall(glUniformMatrix4fv(GetUniformLocation(name), count, GL_FALSE, m.data()));
 }
 
 void Shader::SetUniformLightSource(const LightSource& l)
 {
     this->SetUniform1i("light.type", l.getType());
     this->SetUniform3f("light.position", l.getPosition());
-    this->SetUniform3f("light.color", l.getColor());
+    this->SetUniform4f("light.color", l.getColor());
     this->SetUniform3f("light.direction", l.getDirection());
     this->SetUniform1f("light.innerCutOffAngle", cos(l.getInnerCutOffAngle()));
     this->SetUniform1f("light.outerCutOffAngle", cos(l.getOuterCutOffAngle()));
@@ -222,7 +208,7 @@ void Shader::SetUniformLightSource(const LightSource& l, int id)
 {
     this->SetUniform1i("light[" + std::to_string(id) + "].type", l.getType());
     this->SetUniform3f("light[" + std::to_string(id) + "].position", l.getPosition());
-    this->SetUniform3f("light[" + std::to_string(id) + "].color", l.getColor());
+    this->SetUniform4f("light[" + std::to_string(id) + "].color", l.getColor());
     this->SetUniform3f("light[" + std::to_string(id) + "].direction", l.getDirection());
     this->SetUniform1f("light[" + std::to_string(id) + "].innerCutOffAngle", cos(l.getInnerCutOffAngle()));
     this->SetUniform1f("light[" + std::to_string(id) + "].outerCutOffAngle", cos(l.getOuterCutOffAngle()));

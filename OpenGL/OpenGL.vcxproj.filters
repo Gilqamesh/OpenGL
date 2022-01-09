@@ -78,10 +78,16 @@
     <ClCompile Include="src\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\MaterialTypes.cpp">
+    <ClCompile Include="src\Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\LightSource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,10 +98,10 @@
     <None Include="res\shaders\fps.shader" />
     <None Include="res\shaders\ground.shader" />
     <None Include="res\shaders\lightSource.shader" />
-    <None Include="res\shaders\material\material.fs" />
-    <None Include="res\shaders\material\material.vs" />
-    <None Include="res\shaders\lightSource\lightSource.vs" />
-    <None Include="res\shaders\lightSource\lightSource.fs" />
+    <None Include="res\shaders\material\material.frag" />
+    <None Include="res\shaders\material\material.vert" />
+    <None Include="res\shaders\lightSource\lightSource.vert" />
+    <None Include="res\shaders\lightSource\lightSource.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Renderer.hpp">
@@ -188,16 +194,17 @@
     <ClInclude Include="headers\tests\TestFps.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\MaterialTypes.hpp">
+    <ClInclude Include="headers\Material.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headers\LightSource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="res\textures\landscape.jpg">
-      <Filter>Resource Files</Filter>
-    </Image>
+    <ClInclude Include="headers\Mesh.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Model.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

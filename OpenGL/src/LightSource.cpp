@@ -1,6 +1,6 @@
 #include "LightSource.hpp"
 
-LightSource::LightSource(LightType type, const Vector<float, 3>& position, const Vector<float, 3>& color,
+LightSource::LightSource(LightType type, const Vector<float, 3>& position, const Vector<float, 4>& color,
 	float ambientFactor, float diffuseFactor, float specularFactor,
 	float attenuationFactor_Constant, float attenuationFactor_Linear, float attenuationFactor_Quadratic)
 	: type(type), position(position), color(color),
@@ -10,7 +10,7 @@ LightSource::LightSource(LightType type, const Vector<float, 3>& position, const
 
 }
 
-LightSource::LightSource(LightType type, const Vector<float, 3>& position, const Vector<float, 3>& color, const Vector<float, 3>& direction,
+LightSource::LightSource(LightType type, const Vector<float, 3>& position, const Vector<float, 4>& color, const Vector<float, 3>& direction,
 	float innerCutOffAngle, float outerCutOffAngle,
 	float ambientFactor, float diffuseFactor, float specularFactor,
 	float attenuationFactor_Constant, float attenuationFactor_Linear, float attenuationFactor_Quadratic)

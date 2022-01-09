@@ -7,8 +7,9 @@
 # include <unordered_map>
 # include <math/Matrix.hpp>
 # include <GL/glew.h>
-# include "MaterialTypes.hpp"
 # include "LightSource.hpp"
+
+class Material;
 
 class Shader
 {
@@ -30,6 +31,7 @@ private:
 	std::string								m_VertexShaderPath;
 	std::string								m_FragmentShaderPath;
 public:
+	Shader();
 	Shader(const std::string& filepath);
 	Shader(const std::string& filepath, const std::string& name);
 	Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const std::string& name);
@@ -47,7 +49,6 @@ public:
 	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
 	void SetUniform4f(const std::string& name, const Vector<float, 4> vec4);
 	void SetUniformMat4fv(const std::string &name, int count, const Matrix<float, 4, 4> &m);
-	void SetUniformMaterial(const Material &m);
 	void SetUniformLightSource(const LightSource &l);
 	void SetUniformLightSource(const LightSource &l, int id);
 private:

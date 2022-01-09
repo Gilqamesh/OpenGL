@@ -92,8 +92,8 @@ namespace test
 
 	void TestTexture2D::OnImGuiRender()
 	{
-        ImGui::SliderFloat3("Translation A", &m_TranslationA, 0.0f, 960.0f);
-        ImGui::SliderFloat3("Translation B", &m_TranslationB, 0.0f, 960.0f);
+        ImGui::SliderFloat3("Translation A", m_TranslationA.data(), 0.0f, 960.0f);
+        ImGui::SliderFloat3("Translation B", m_TranslationB.data(), 0.0f, 960.0f);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 }

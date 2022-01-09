@@ -88,13 +88,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)\OpenGL\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)\OpenGL\headers;$(SolutionDir)Dependencies\Assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;$(SolutionDir)Dependencies\AssimpBins\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp.lib</AdditionalDependencies>
+      <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,15 +106,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)\OpenGL\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)\OpenGL\headers;$(SolutionDir)Dependencies\Assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;$(SolutionDir)Dependencies\AssimpBins\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp.lib</AdditionalDependencies>
+      <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -122,13 +124,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)\OpenGL\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)\OpenGL\headers;$(SolutionDir)Dependencies\Assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;$(SolutionDir)Dependencies\Assimp\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimpd.lib</AdditionalDependencies>
+      <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,15 +142,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)\OpenGL\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)\OpenGL\headers;$(SolutionDir)Dependencies\Assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;$(SolutionDir)Dependencies\Assimp\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimpd.lib</AdditionalDependencies>
+      <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -159,7 +163,9 @@
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\LightSource.cpp" />
-    <ClCompile Include="src\MaterialTypes.cpp" />
+    <ClCompile Include="src\Material.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\tests\TestCamera.cpp" />
@@ -181,23 +187,25 @@
     <None Include="res\shaders\fps.shader" />
     <None Include="res\shaders\ground.shader" />
     <None Include="res\shaders\lightSource.shader" />
-    <None Include="res\shaders\lightSource\lightSource.fs" />
-    <None Include="res\shaders\lightSource\lightSource.vs" />
-    <None Include="res\shaders\material\material.fs" />
-    <None Include="res\shaders\material\material.vs" />
+    <None Include="res\shaders\lightSource\lightSource.frag" />
+    <None Include="res\shaders\lightSource\lightSource.vert" />
+    <None Include="res\shaders\material\material.frag" />
+    <None Include="res\shaders\material\material.vert" />
     <None Include="res\shaders\scene.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Camera.hpp" />
     <ClInclude Include="headers\IndexBuffer.hpp" />
     <ClInclude Include="headers\LightSource.hpp" />
-    <ClInclude Include="headers\MaterialTypes.hpp" />
+    <ClInclude Include="headers\Material.hpp" />
     <ClInclude Include="headers\math\Debug.hpp" />
     <ClInclude Include="headers\math\Fixed.hpp" />
     <ClInclude Include="headers\math\Matrix.hpp" />
     <ClInclude Include="headers\math\Point.hpp" />
     <ClInclude Include="headers\math\Quaternion.hpp" />
     <ClInclude Include="headers\math\Vector.hpp" />
+    <ClInclude Include="headers\Mesh.hpp" />
+    <ClInclude Include="headers\Model.hpp" />
     <ClInclude Include="headers\Renderer.hpp" />
     <ClInclude Include="headers\Shader.hpp" />
     <ClInclude Include="headers\tests\TestCamera.hpp" />
@@ -220,9 +228,6 @@
     <ClInclude Include="headers\VertexBufferLayout.hpp" />
     <ClInclude Include="headers\vendor\stb_image\stb_image.h" />
     <ClInclude Include="headers\Window.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="res\textures\landscape.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
