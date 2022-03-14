@@ -16,7 +16,7 @@
 void GLClearError(void);
 bool GLLogCall(const char* function, const char* file, int line);
 # ifndef LOG
-#  define LOG(x) (std::cout << (x) << std::endl)
+#  define LOG(x) (std::cout << x << std::endl)
 # endif
 // # define TRACE(x) (Trace::add(x))
 # define TRACE() (Trace::add("File: " + std::string(__FILE__).substr(std::string(__FILE__).find_last_of("/") + 1) + ", \t\tfunction: " \

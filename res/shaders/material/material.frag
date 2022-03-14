@@ -4,7 +4,7 @@
 #define LightType_Directional 1
 #define LightType_Spot 2
 
-#define MAX_MAPS 10
+#define MAX_MAPS 4
 #define MaterialColor_Normal 0
 #define MaterialColor_Tex 1
 
@@ -69,7 +69,7 @@ void main()
 		for (int j = 0; j < material.mapsSize; ++j)
 		{
 			if (light[i].type == LightType_Point)
-				sumColor += calculatePointLightColor(light[i], i);
+				sumColor += calculatePointLightColor(light[i], j);
 			else if (light[i].type == LightType_Directional)
 				sumColor += calculateDirectionalLightColor(light[i], j);
 			else if (light[i].type == LightType_Spot)

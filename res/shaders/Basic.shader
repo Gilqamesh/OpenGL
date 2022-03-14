@@ -15,7 +15,7 @@ void main()
    gl_Position = u_MVP * vec4(position, 1.0f);
    v_TexCoord = a_TexCoord;
    v_TexIndex = a_TexIndex;
-};
+}
 
 #shader fragment
 #version 330 core
@@ -31,4 +31,4 @@ void main()
 {
     int index = int(v_TexIndex);
     color = texture(u_Textures[index], v_TexCoord);
-};
+}

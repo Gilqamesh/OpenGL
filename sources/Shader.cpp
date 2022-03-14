@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "Renderer.hpp"
+#include "Utils.hpp"
 
 Shader::Shader()
 {
@@ -147,14 +148,14 @@ unsigned int Shader::CreateShaders(const std::string& vertexShader, const std::s
 unsigned int Shader::CreateShader(const std::string& shaderCode, GLuint shaderType)
 {
     TRACE();
-    unsigned int program = glCreateProgram();
+    GLCall(unsigned int program = glCreateProgram());
     unsigned int shaderId = CompileShader(shaderType, shaderCode);
 
-    glAttachShader(program, shaderId);
-    glLinkProgram(program);
-    glValidateProgram(program);
+    GLCall(glAttachShader(program, shaderId));
+    GLCall(glLinkProgram(program));
+    GLCall(glValidateProgram(program));
 
-    glDeleteShader(shaderId);
+    GLCall(glDeleteShader(shaderId));
 
     return (program);
 }

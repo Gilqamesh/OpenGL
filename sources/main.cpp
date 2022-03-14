@@ -31,6 +31,11 @@ int main(void)
 {
     TRACE();
     Window window("Hello World", 1340, 680);
+    GLint tmp;
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &tmp);
+    LOG("GL_MAX_TEXTURE_IMAGE_UNITS (texture map access from the fragment shader): " << tmp);
+    glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &tmp);
+    LOG("GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS (texture map access from the vertex shader): " << tmp);
 
     {
 
