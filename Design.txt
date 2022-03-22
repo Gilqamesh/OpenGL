@@ -1,0 +1,76 @@
+Steps of what the engine does:
+1. Instantiate Window object
+    - initializes GLFW (GLFramework)
+    - initializes GLEW (GL Extension Wrangler)
+    - set event handlers (mouse/key/resize)
+2. Initialize IMGUI
+3. Register tests using 'test' class
+    - the game loop with run one instance of a test at a time
+    - tests can be switched during run-time
+    - tests have methods to update and render
+4. Main game loop
+
+Main game loop:
+1. Update delta time
+2. Call 'update' method of current test
+3. Call 'render' method of current test
+4. Imgui::begin()
+5. Call 'imguirender' method of current test
+6. Imgui::end()
+7. Imgui::render()
+8. glfw pollevents, swapbuffer 
+
+Testfps class:
+    Held objects:
+        Window reference
+        Camera instance
+
+        /* Environment */
+        Shader unique_ptr
+        Material instance
+        Mesh unique_ptr
+        Texture vector<unique_ptr>
+        Mesh::Vertex vector of instance
+        unsigned int vector
+
+        /* Ground */
+        Texture instance * 4
+        Shader unique_ptr
+        Material instance
+        Mesh unique_ptr
+        Mesh::Vertex vector of instances
+        unsigned int vector
+
+        /* LightSource */
+        { /* these three makes up a Mesh */
+            VertexArray unique_ptr
+            VertexBuffer unique_ptr
+            IndexBuffer unique_ptr
+        }
+        Shader unique_ptr
+        LightSource instance * 2
+
+        /* other */
+        float - deltaTime
+        float - moveSpeed
+        Matrix - View
+        Matrix - Proj
+        Camera::cameraModeType - cameraMode
+
+Mesh class:
+    Held objects:
+        vector<Vertex> reference
+        vector<unsigned int> reference
+        Material reference
+        VertexArray unique_ptr
+        VertexBuffer unique_ptr
+        IndexBuffer unique_ptr
+
+Observations:
+Currently there are two environment objects:
+Light object
+    - three types currently: point, directional, spot
+Material object
+    - each material has ambient/diffuse/specular/emission textures,
+        which describe how light affects them
+    - each material has a shininess factor

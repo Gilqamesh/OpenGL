@@ -64,6 +64,8 @@ namespace test
 		std::vector<Mesh::Vertex>				groundQuads;
 		std::vector<unsigned int>				indicesGroundQuads;
 
+        float deltaTime;
+
 		void TestFpsInit(void);
 
 		void configureEnvironment(void);

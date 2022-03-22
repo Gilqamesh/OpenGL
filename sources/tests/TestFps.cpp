@@ -46,6 +46,7 @@ namespace test
 
 	void TestFps::OnUpdate(float deltaTime)
 	{
+        this->deltaTime = deltaTime;
         TRACE();
 		// Update Members
 		bool *keys = m_window.getKeys();
@@ -136,6 +137,7 @@ namespace test
 		switch (currentSetting)
 		{
 		case MENU:
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "FPS %f", deltaTime > 0.00001f ? 1 / deltaTime : INFINITY);
 			ImGui::Text("Camera options:\n(0) OFF\n(1) Free camera\n(2) FPS\n(3) Top Down\n\n");
 			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Current mode: ");
 			switch (m_Camera.getMode())
