@@ -4,7 +4,7 @@
 #define LightType_Directional 1
 #define LightType_Spot 2
 
-#define MAX_MAPS 2
+#define MAX_MAPS 4
 #define MaterialColor_Normal 0
 #define MaterialColor_Tex 1
 

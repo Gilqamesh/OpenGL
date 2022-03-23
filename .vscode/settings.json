@@ -17,6 +17,7 @@
         "unordered_map": "cpp",
         "utility": "cpp",
         "vector": "cpp",
-        "memory": "cpp"
+        "memory": "cpp",
+        "__mutex_base": "cpp"
     }
 }

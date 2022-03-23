@@ -10,7 +10,6 @@ IndexBuffer::IndexBuffer(const void* data, unsigned int count)
     : m_Count(count)
 {
     TRACE();
-    ASSERT(sizeof(unsigned int) == sizeof(GLuint));
 
     GLCall(glGenBuffers(1, &m_RendererID));
     // select created buffer

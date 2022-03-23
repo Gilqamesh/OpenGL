@@ -65,12 +65,59 @@ Mesh class:
         VertexArray unique_ptr
         VertexBuffer unique_ptr
         IndexBuffer unique_ptr
+Window class:
+    Held objects:
+        width, height
+        GLFWwindow pointer
+        5* float corresponding to mouse position/zoom
+        1024 bools array for key held down
+    Functions:
+        getters for all the above objects
+        event handler functions for keys, mouse, scroll
+        two setter function for how objects are drawn on the screen
+    Functionality:
+        init GLFW, GLEW
+        glfwCreateWindow
+        set callbacks
 
-Observations:
-Currently there are two environment objects:
+______End result_____
 Light object
     - three types currently: point, directional, spot
 Material object
-    - each material has ambient/diffuse/specular/emission textures,
+    - each material has references to ambient/diffuse/specular/emission textures,
         which describe how light affects them
     - each material has a shininess factor
+Model object:
+    - array of meshes basically
+    - optimally meshes can be reused and so multiple models could reuse the same mesh,
+        in order to do this, each mesh needs their own model transformation matrix and when
+        drawing the model, each mesh sets its shader uniforms
+Texture object: they can be reused by multiple materials
+    - currently there are two types: loaded from a file or a vector of 4 floats
+    - if loaded from a file it has width, height, bpp, filepath
+    - the vector of 4 floats are: rgba values
+    - only common thing is bind/unbind
+        - color version does nothing
+        - textures that are loaded have GL_IDs
+Mesh object:
+    - each object is made out of:
+        - array of vertices
+        - array of indices
+        - material
+VertexArray object:
+    - GL ID
+    - VertexBuffer
+    - Layout
+VertexBuffer object:
+    - GL ID
+    - two types: static, dynamic
+    - static can be passed in with specific data and size
+    - dynamic only needs size and will be constructed on the go
+IndexBuffer:
+    - GL ID
+    - needs specific data with size
+Idea:
+    a model can consist of multiple of the same meshes, so each model holds references
+    to meshes and each maps to a new model transformation matrix
+Window:
+
